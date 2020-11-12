@@ -124,8 +124,9 @@ class Button : View() {
 }
 
 infix fun Double.to(other: Any) = Pair(this, other)
-
 fun main() {
+
+
 //    val a = apple()
 //    a.say()
 //    val e = ema(3)
@@ -137,7 +138,6 @@ fun main() {
     //println(list)
     val view = Button()
     view.click()
-
 
 
     //print(joinToString(list, ";", "(", ")"))

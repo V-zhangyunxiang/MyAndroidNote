@@ -8,6 +8,7 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -43,10 +44,11 @@ public class UpDownView extends View {
     }
 
     /**
-     * 递减左上角 Y 轴坐标
+     * 设置左上角 Y 轴坐标
      */
     public void setTopProgress(float topProgress) {
         this.mTop = dip2px(topProgress);
+        Log.i("zyx", "setTopProgress- " + mTop);
         invalidate();
     }
 
@@ -55,10 +57,23 @@ public class UpDownView extends View {
     }
 
     /**
-     * 递减右下角 Y 轴坐标
+     * 设置右下角 Y 轴坐标
      */
     public void setBottomProgress(float bottomProgress) {
         this.mBottom = dip2px(bottomProgress);
+        Log.i("zyx", "setBottomProgress- " + mBottom);
+        invalidate();
+    }
+
+    /**
+     * 还原到原来的位置
+     *
+     * @param topValue    左上角 Y 轴原始坐标
+     * @param bottomValue 右下角 Y 轴原始坐标
+     */
+    public void setOriginValue(float topValue, float bottomValue) {
+        this.mTop = dip2px(topValue);
+        this.mBottom = dip2px(bottomValue);
         invalidate();
     }
 

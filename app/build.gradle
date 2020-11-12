@@ -5,7 +5,7 @@ apply plugin: 'kotlin-android'
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.xiaozhu.testproject"
+        applicationId "com.zyx.testproject"
         minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
@@ -27,6 +27,22 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
+
+//    dimension 'demo'
+//
+//    productFlavors {
+//        china {
+//
+//        }
+//        america {
+//
+//        }
+//        free {
+//            dimension 'demo'
+//            applicationId 'com.zyx.testproject.free'
+//            manifestPlaceholders = [app_label: "免费"]
+//        }
+//    }
 
 //    sourceSets{
 //        main{
@@ -56,6 +72,14 @@ android {
 //    }
 }
 
+
+class MyPlugin implements Plugin<Project> {
+    @Override
+    void apply(Project project) {
+        println "myPlugin invoked!"
+    }
+}
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
@@ -73,7 +97,7 @@ dependencies {
     implementation 'android.arch.lifecycle:extensions:1.1.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-   // implementation 'demo.zyx.com:testmaven:1.1.0'
+    // implementation 'demo.zyx.com:testmaven:1.1.0'
 }
 repositories {
     mavenCentral()

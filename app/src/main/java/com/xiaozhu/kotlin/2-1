@@ -1,0 +1,32 @@
+开发环境配置
+
+vi hello.kt
+./kotlinc hello.kt   编译生成一个 HelloKt.class 文件
+./kotlin HelloKt     运行 class 文件
+
+./kotlinc 可以进入 shell 程序
+val b = 2
+>>> println(b::class)
+class kotlin.Int
+>>> println(b::class.java)
+int
+
+./kotlin -version
+Kotlin version 1.4.10-release-411 (JRE 1.8.0_172-b11)
+
+安装 Kotlin
+Linux : SDKMan
+   安装 SDK Man
+   curl -s "https://get.sdkman.io" | bash
+   sdk install kotlin
+
+   CenOS 等其他 Linux : sudo apt-get install kotlin
+MacOS : HomeBrew
+    brew install kotlin
+Windows : Scoop
+   power shell 安装
+   iwr -useb get.scoop.sh | iex
+
+   scoop install git
+   scoop install kotlin
+
