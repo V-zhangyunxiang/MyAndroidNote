@@ -40,6 +40,7 @@ class SuperMan {}
 @Retention(RetentionPolicy.RUNTIME)
 @interface Perform {}
 
+// Test
 @Person()
 public class TestAnnotation {
   @Check(value = "hi")
@@ -51,13 +52,14 @@ public class TestAnnotation {
   }
 
   public static void main(String[] args) {
-    //        if (TestAnnotation.class.isAnnotationPresent(Person.class)) {
-    //            Person person = TestAnnotation.class.getAnnotation(Person.class);
-    //            if (person != null) {
-    //                System.out.println(person.id());
-    //                System.out.println(person.role());
-    //            }
-    //        }
+    if (TestAnnotation.class.isAnnotationPresent(Person.class)) {
+      Person person = TestAnnotation.class.getAnnotation(Person.class);
+      if (person != null) {
+        System.out.println(person.id());
+        System.out.println(person.role());
+      }
+    }
+
     try {
       Field a = TestAnnotation.class.getDeclaredField("a");
       a.setAccessible(true);

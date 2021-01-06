@@ -1,0 +1,45 @@
+Gradle 工程简介
+
+ Gradle 是一个灵活高效且支持多语言多平台的构建工具
+
+ 演变过程
+
+   Ant              Maven            Gradle
+   XML 配置          XML 配置         Groovy/kotlin
+   手动依赖管理       中央仓库          支持多种仓库
+                    自动依赖管理       易扩展高性能 （插件、task）
+ 安装 Gradle
+    1. 直接官网下载 Zip 包解压
+    2. 通过包管理工具
+         SDKMan  HomeBrew
+    3. Gradle Wrapper
+       可灵活配置版本，无需手动下载，Sync 后自动下载对应版本
+
+    gradlew
+    gradlew.bat 启动脚本
+
+    gradle 文件夹 = 版本配置
+
+    setting.gradle : Gradle 工程初始化配置文件
+    根 Build Gradle : 根工程配置文件
+    gradle.properties : Gradle 属性配置文件，值会添加到 Project 中，在 build gradle 使用的 Project 对象就是
+
+    Gradle 配置 = 插件仓库 + 插件配置 + 依赖仓库 + 依赖配置 + 任务管理
+
+    task helloWord(group:"hello"){
+       println("Hello")  //编译时配置
+
+       // 执行时运行的任务
+       doLast{
+          println("Word")
+       }
+    }
+
+常见问题解决
+   Gradle 下载不下来？
+    找到路径，删除未下载完成文件，通过浏览器下载 zip 包放到原路径中，重新 sync
+   依赖下载不下来？
+     选择阿里云仓库
+   Gradle sync failed？
+     一般都有提示：单词写错等等
+     ./gradlew --debug 看清详细日志

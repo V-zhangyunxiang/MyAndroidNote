@@ -1,0 +1,19 @@
+Android Studio 配置 kotlin 开发环境
+
+AS 是基于 Intellij IDE 基线版本开发的
+
+3.0 开始内置了 kotlin 插件，无需安装
+
+Android 工程支持 Kotlin 分两步
+  1. Gradle 添加 kotlin 编译插件
+  2. Gradle 添加 kotlin 标准库依赖
+
+   根 build gradle dependencies 中添加插件
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.50"
+   app build gradle 中使用
+    apply plugin: 'kotlin-android'
+    dependencies 中添加依赖库
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.50"
+
+    Java 和 Kotlin 可以相互调用，且 Java 可以转换为 kotlin
+

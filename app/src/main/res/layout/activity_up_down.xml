@@ -5,7 +5,7 @@
   android:alpha="0.5"
   android:background="#ff000000">
 
-  <com.xiaozhu.UpDownView
+  <com.xiaozhu.testproject.UpDownView
     android:id="@+id/round_up_down"
     android:layout_width="100dp"
     android:layout_height="110dp"

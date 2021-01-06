@@ -1,4 +1,4 @@
-package com.xiaozhu;
+package com.xiaozhu.testproject;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorPauseListener;
@@ -15,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import com.xiaozhu.testproject.R;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;

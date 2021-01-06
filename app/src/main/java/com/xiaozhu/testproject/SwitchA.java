@@ -9,23 +9,23 @@ import android.view.View;
 /**
  * Description
  *
- * @author zhangyunxiang
- * Date 2018/12/7 14:07
+ * @author zhangyunxiang Date 2018/12/7 14:07
  */
 public class SwitchA extends AppCompatActivity {
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.switch_a);
-        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+  @Override
+  protected void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.switch_a);
+    findViewById(R.id.button3)
+        .setOnClickListener(
+            new View.OnClickListener() {
+              @Override
+              public void onClick(View v) {
                 Intent intent = new Intent(SwitchA.this, SwitchB.class);
                 startActivity(intent);
                 overridePendingTransition(R.anim.b_in, R.anim.a_out);
-            }
-        });
-    }
-
+              }
+            });
+  }
 }
