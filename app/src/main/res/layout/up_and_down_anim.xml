@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:alpha="0.5"
+  android:background="#ff000000">
+
+  <com.owl.android_simple.view.UpDownView
+    android:id="@+id/round_up_down"
+    android:layout_width="100dp"
+    android:layout_height="110dp"
+    android:layout_above="@id/iv_circle"
+    android:layout_centerInParent="true" />
+
+  <ImageView
+    android:id="@+id/iv_circle"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:src="@drawable/round_circle_up_dpwn" />
+
+  <ImageView
+    android:id="@+id/iv_hand"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:paddingTop="42dp"
+    android:src="@drawable/svg" />
+
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/iv_hand"
+    android:layout_centerInParent="true"
+    android:gravity="center"
+    android:text="滑动看更多"
+    android:textColor="#ffffff"
+    android:textSize="20sp" />
+
+  <Button
+    android:id="@+id/button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="20dp"
+    android:text="开始" />
+
+  <Button
+    android:id="@+id/button2"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/button"
+    android:layout_alignLeft="@id/button"
+    android:text="振动" />
+
+  <Button
+    android:id="@+id/button3"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/button2"
+    android:layout_alignLeft="@id/button"
+    android:text="重复开始" />
+
+</RelativeLayout>
