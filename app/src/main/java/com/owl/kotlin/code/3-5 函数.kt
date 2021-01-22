@@ -50,7 +50,6 @@ val s33: Function3<Foo, String, Int, String> = Foo::foo
 val foo = Foo()
 val z: (String, Int) -> Any = foo::foo
 
-
 fun yy(p: (Foo, String, Int) -> Any) {
     val s = p(Foo(), "2", 2)
 }

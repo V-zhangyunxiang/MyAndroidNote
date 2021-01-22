@@ -32,20 +32,22 @@ fun test2(i: Int, test: (Int) -> Boolean) {
 }
 
 fun main() {
+    //数组的创建
+    val d = arrayOf("hello", "world")
     val c0 = intArrayOf(1, 2, 3, 4, 5) // doubleArrayOf() 等等
-    val c1 = IntArray(5) { it + 1 }   // BooleanArray 等等
+    val c1 = IntArray(5) { it + 1 }   // BooleanArray 等等  it 指代每个元素本身
     // {} 表示数组下标 index 索引值，从第一个数组元素开始，依次为每个数组元素调用函数[init]。它应返回给定索引的数组元素的值。
     c1[0] = 2               //赋值
     println(c1)             //数组对象的 hash 值
     println(c1.toString())  //数组对象的 hash 值 ，这点与 Java 不同
     println(c1.contentToString()) //真正的输出数组元素
     println(c1.size)  //数组的长度, Java 是 length
-    //数组的创建
-    val d = arrayOf("hello", "world")
-    BooleanArray(6) { false }
-    BooleanArray(6) { i -> i > 5 }
 
-    val s = Array<Int>(6) { i -> i }
+    BooleanArray(6) { false }
+    val booleanArray = BooleanArray(6) { i -> i > 3 }
+    println("booleanArray[]= ${booleanArray.contentToString()}")
+
+    val s = Array(6) { i -> i }
     s[0] = 3
     println("s[]= ${s.contentToString()}")
 
