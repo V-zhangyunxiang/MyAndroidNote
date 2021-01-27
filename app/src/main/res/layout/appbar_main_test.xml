@@ -1,62 +1,106 @@
-<?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-  <android.support.design.widget.AppBarLayout
-    android:id="@+id/app_bar"
+  <!--
+  此处不一定必须是 NestedScrollView，
+  在 CoordinatorLayout 中嵌套滑动的本质是一个 NestedScrollingChild 对象，
+  RecyclerView 和 SwipeRefreshLayout 也可作为配套的嵌套滑动组件
+
+  app:layout_behavior="@string/appbar_scrolling_view_behavior"
+  1. 指定绑定 AppBarLayout 内的内容
+  2. 将 NestedScrollView 放在 AppBarLayout 下方
+  -->
+  <android.support.v4.widget.NestedScrollView
     android:layout_width="match_parent"
-    android:layout_height="300dp"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <!-- Your scrolling content -->
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:text="22222222222222222222222222222222" />
+
+  </android.support.v4.widget.NestedScrollView>
+
+  <!--
+  AppBarLayout 默认是一个垂直的 linearLayout，它的直接子 View 需要设置 app:layout_scrollFlags
+  表明滑动的行为，其有以下 5 个值
+  scroll：基础设置，其它属性都是在此属性基础上的(其它属性使用时都要带上它)
+  向上滑动的时候，Toolbar 先滑动，然后 NestedScrollView 中的内容再滑动。
+  向下滑动的时候，NestedScrollView 中的内容先滑动，然后 Toolbar 再一起滑动
+
+  当 AppBarLayout 中的内容要从 CoordinatorLayout 外面进入内部时，我们用 enter 指代这种行为，对应的手势就是向下滑动
+  当 AppBarLayout 中的内容从 CoordinatorLayout 内部向外部方向移动时，我们用 exit 指代这种行为，对应的手势是向上滑动
+
+  collapsed 的高度由相应的 View 的 minHeight 属性指定，也就是一个 View 的最小高度
+  与 collapsed 相关的 layout_scrollFlags 有两个：exitUntilCollapsed 和 enterAlwaysCollapsed
+
+  exitUntilCollapsed ： 表示向上滑动时，当前 View 被压缩到 minHeight 时，将不再滑动
+  enterAlways        ： 表示向下滑动时，Toolbar 会和 NestedScrollView 一起滑动，它们是同时滑动的
+  enterAlwaysCollapsed：配合scroll 和 enterAlways 使用。
+                        向下滑动时，Toolbar 先滑动，等到视图可见范围高度为 collapsed 指定高度时它会静止，等到
+                        NestedScrollView 内容完全显示在 Toolbar 下方时它再一起滑动
+  snap : 吸附的效果。向上滑动时，如果滑过了一半它就向上滚动，否则滚动回原来的地方。向下同理
+
+  CollapsingToolbarLayout 出现的目的只是为了增强 Toolbar
+  Collapsing Title 可折叠的标题
+  Content Scrim 内容纱布
+  Status bar scrim 状态栏纱布
+  Parallax scrolling children 子 View 的视差滚动行为
+  Pinned position children 子类的位置固定行为
+
+  Collapsing title 与 toolbar 中的 title 相比滑动时 title的 大小和位置会发生变化，这是 toolbar 单独做不到的
+  当 CollapsingToolbarLayout 和 Toolbar 都设置了 title，以 CollapsingToolbarLayout 的为准
+
+  Content Scrim
+    CollapsingToolbarLayout 会在折叠状态显示指定的颜色或者是图片，它就像是一块纱布一样遮住 title 下面的内容
+    所以被称为内容纱布，如果一个 CollapsingToolbarLayout 中只有 Toolbar 的话，那么它就不起作用，需要在 Toolbar
+    的前面位置加入其它的 View 作为内容(例子中是 ImageView)，Content scrim 才会起作用
+
+  Status bar scrim 状态栏纱布（当前例子未生效）
+    包裹 CollapsingToolbarLayout 的 AppbarLayout 需要设置 fitsSystemWindows 为 true
+ collapseMode
+    none 默认，无任何效果
+    Parallax 视差滚动：滚动的速度不同，造成的视觉差异效果,作用在 CollapsingToolbarLayout 中的子 View，滑动速度是正常的一半
+    pin 固定某个 View：滑动时该 View 保持不动
+   -->
+  <android.support.design.widget.AppBarLayout
+    android:layout_width="match_parent"
+    android:layout_height="250dp"
     android:fitsSystemWindows="true">
 
     <android.support.design.widget.CollapsingToolbarLayout
-      android:id="@+id/collapsing_toolbar_layout"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      app:collapsedTitleGravity="center"
-      app:contentScrim="@color/colorPrimary"
-      app:expandedTitleGravity="center_horizontal|bottom"
-      app:expandedTitleMarginEnd="50dp"
-      app:expandedTitleMarginStart="50dp"
-      app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+      android:layout_height="250dp"
+      android:minHeight="150dp"
+      app:contentScrim="#C85450"
+      app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+      app:statusBarScrim="#C85450"
+      app:title="collapsing title">
 
       <ImageView
-        android:id="@+id/iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@mipmap/login_2"
-        app:layout_collapseMode="parallax"
-        app:layout_collapseParallaxMultiplier="0.5" />
+        android:src="@drawable/wallhaven_doe" />
 
       <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="60dp"
         app:layout_collapseMode="pin"
-        tools:ignore="NewApi">
-
-        <!--<ImageView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:src="@mipmap/ic_launcher"-->
-        <!--/>-->
-        <include
-          android:id="@+id/include_toolbar_open"
-          layout="@layout/appbar_main_test_include_two" />
-
-        <include
-          android:id="@+id/include_toolbar_close"
-          layout="@layout/appbar_main_test_include_one" />
-
-      </android.support.v7.widget.Toolbar>
+        app:title="title"
+        app:titleTextColor="#00ff00" />
     </android.support.design.widget.CollapsingToolbarLayout>
+
+    <android.support.design.widget.TabLayout
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:background="#ff00ff" />
+
   </android.support.design.widget.AppBarLayout>
 
-  <include layout="@layout/appbar_main_test_include_text" />
-
 </android.support.design.widget.CoordinatorLayout>
-
-

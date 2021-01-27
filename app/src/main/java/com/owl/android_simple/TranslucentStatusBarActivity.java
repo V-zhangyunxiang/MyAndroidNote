@@ -21,26 +21,6 @@ public class TranslucentStatusBarActivity extends AppCompatActivity {
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-
-    // 动态添加输入框
-    //        ll = findViewById(R.id.ooo);
-    //        for (int i = 0; i < 1; i++) {
-    //            View view = LayoutInflater.from(this).inflate(R.layout.shake_anim, null);
-    //            Button btn = view.findViewById(R.id.button2);
-    //            btn.setText("lll");
-    //            ll.addView(view);
-    //        }
-    //
-    //        findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
-    //            @Override
-    //            public void onClick(View v) {
-    //                for (int i = 0; i < 1; i++) {
-    //                    EditText ed = ll.getChildAt(i).findViewById(R.id.editText);
-    //                    Log.i("zyx", ed.getText().toString());
-    //                }
-    //            }
-    //        });
-
     // setFitsSystemWindows(this,true);
     // addStatusWithColorAll(this, getResources().getColor(R.color.colorAccent),true);
   }
@@ -52,7 +32,7 @@ public class TranslucentStatusBarActivity extends AppCompatActivity {
    * @param value
    */
   public static void setFitsSystemWindows(Activity activity, boolean value) {
-    ViewGroup contentFrameLayout = (ViewGroup) activity.findViewById(android.R.id.content);
+    ViewGroup contentFrameLayout = activity.findViewById(android.R.id.content);
     View parentView = contentFrameLayout.getChildAt(0);
     if (parentView != null) {
       parentView.setFitsSystemWindows(value);
@@ -65,7 +45,7 @@ public class TranslucentStatusBarActivity extends AppCompatActivity {
    * @param activity
    */
   private void addStatusViewWithColor(Activity activity, int color) {
-    ViewGroup contentView = (ViewGroup) activity.findViewById(android.R.id.content);
+    ViewGroup contentView = activity.findViewById(android.R.id.content);
     View statusBarView = new View(activity);
     ViewGroup.LayoutParams lp =
         new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getStatusBarHeight());
@@ -76,8 +56,7 @@ public class TranslucentStatusBarActivity extends AppCompatActivity {
   // 沉浸式终极方案
   public void addStatusWithColorAll(Activity activity, int color, boolean isChangeIconColor) {
     // 设置 paddingTop
-    ViewGroup rootView =
-        (ViewGroup) activity.getWindow().getDecorView().findViewById(android.R.id.content);
+    ViewGroup rootView = activity.getWindow().getDecorView().findViewById(android.R.id.content);
     rootView.setPadding(0, getStatusBarHeight(), 0, 0);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       // 5.0 以上直接设置状态栏颜色

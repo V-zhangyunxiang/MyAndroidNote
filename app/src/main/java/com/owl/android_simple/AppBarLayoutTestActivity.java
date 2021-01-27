@@ -1,16 +1,9 @@
 package com.owl.android_simple;
 
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.ImageView;
 
 /**
  * Description
@@ -19,53 +12,40 @@ import android.widget.ImageView;
  */
 public class AppBarLayoutTestActivity extends AppCompatActivity
     implements AppBarLayout.OnOffsetChangedListener {
-  private ImageView iv;
-  private CollapsingToolbarLayout collapsingToolbarLayout;
-  private Toolbar toolbar;
-  private AppBarLayout appBarLayout;
-  private View toolbarOpen, toolbarClose;
+  /*
+  1. CoordinatorLayout 是这个库的组织容器，一切基于 support design 扩展出来的特性都应该发生在 CoordinatorLayout 及它的子 View 体系中
 
+  2. CoordinatorLayout 是一个普通的 ViewGroup，它的布局特性类似于 FrameLayout
+
+  3. AppbarLayout 应该作为一个 CoordinatorLayout 的直接子 View，否则它与普通的 LinearLayout 无异。
+
+  4. AppbarLayout 的子 View 不仅仅是 Toolbar,它们可以是任何的 View，但通常和 Toolbar 配合使用
+
+    CoordinatorLayout
+            |
+    AppbarLayout(CollapsingToolbarLayout)
+            |
+          Toolbar
+  */
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-    }
-
     super.onCreate(savedInstanceState);
     setContentView(R.layout.appbar_main_test);
-
-    collapsingToolbarLayout = findViewById(R.id.collapsing_toolbar_layout);
-    appBarLayout = findViewById(R.id.app_bar);
-    toolbar = findViewById(R.id.toolbar);
-    setSupportActionBar(toolbar);
-
-    toolbar.setNavigationIcon(R.mipmap.ic_launcher);
-    //        collapsingToolbarLayout.setTitle("xiaozhu");
-    collapsingToolbarLayout.setCollapsedTitleTextColor(Color.GREEN);
-    collapsingToolbarLayout.setExpandedTitleColor(Color.BLUE);
-
-    toolbarOpen = findViewById(R.id.include_toolbar_open);
-    toolbarClose = findViewById(R.id.include_toolbar_close);
-
-    appBarLayout.addOnOffsetChangedListener(this);
   }
 
   @Override
-  public void onOffsetChanged(AppBarLayout appBarLayout, int i) {
-    int offset = Math.abs(i);
+  public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+    int offset = Math.abs(verticalOffset);
     int scrollRange = appBarLayout.getTotalScrollRange();
     if (offset <= scrollRange / 2) {
-      toolbarOpen.setVisibility(View.VISIBLE);
-      toolbarClose.setVisibility(View.GONE);
+
     } else {
-      toolbarClose.setVisibility(View.VISIBLE);
-      toolbarOpen.setVisibility(View.GONE);
+
     }
   }
 
   @Override
   protected void onDestroy() {
     super.onDestroy();
-    appBarLayout.removeOnOffsetChangedListener(this);
   }
 }

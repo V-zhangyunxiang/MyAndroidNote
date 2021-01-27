@@ -12,10 +12,10 @@
     android:icon="@mipmap/ic_launcher"
     android:roundIcon="@drawable/ic_launcher_background"
     android:supportsRtl="true"
-    android:theme="@style/AppTheme"
+    android:theme="@style/Theme.AppCompat.Light.NoActionBar"
     tools:ignore="GoogleAppIndexingWarning">
 
-    <activity android:name="com.owl.android_simple.MainActivity">
+    <activity android:name="com.owl.android_simple.AppBarLayoutTestActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
