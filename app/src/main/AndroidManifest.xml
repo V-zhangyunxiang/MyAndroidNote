@@ -15,7 +15,7 @@
     android:theme="@style/Theme.AppCompat.Light.NoActionBar"
     tools:ignore="GoogleAppIndexingWarning">
 
-    <activity android:name="com.owl.android_simple.AppBarLayoutTestActivity">
+    <activity android:name="com.owl.android_simple.customview.AppBarLayoutTestActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
