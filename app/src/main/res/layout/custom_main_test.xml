@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <com.owl.android_simple.view.CanvasView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+
+  <!--  <com.owl.android_simple.view.PieView-->
+  <!--    android:id="@+id/pieView"-->
+  <!--    android:layout_width="match_parent"-->
+  <!--    android:layout_height="match_parent" />-->
+
+
+</android.support.constraint.ConstraintLayout>

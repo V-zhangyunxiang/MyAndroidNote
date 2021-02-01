@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
   }
 
   public void click(View v) {
-    // 不会激活组件，带有默认选项
+    // 不会激活组件，带有默认选项，可以设置默认打开方式
     Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.baidu.com"));
     List<ResolveInfo> activities =
         getPackageManager().queryIntentActivities(webIntent, PackageManager.MATCH_DEFAULT_ONLY);

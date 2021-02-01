@@ -42,7 +42,7 @@ public class DrawableTestActivity extends AppCompatActivity {
     ImageView imageView = findViewById(R.id.image_bitmap);
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
     BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
-    bitmapDrawable.getBitmap();
+    bitmapDrawable.getBitmap(); // BitmapDrawable 转换为 bitmap
     /*
      * 启用或禁用抗锯齿, 旋转时，可以使用抗锯齿来平滑位图的边缘, 默认值是 false
      * 开启后会让图片变得光滑，但是可以忽略的降低图片的清晰度

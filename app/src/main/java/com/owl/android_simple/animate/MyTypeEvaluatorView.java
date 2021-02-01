@@ -58,6 +58,7 @@ public class MyTypeEvaluatorView extends View {
     canvas.drawCircle(x, y, RADIUS, mPaint);
   }
 
+  /** 属性动画不光能控制 View，非 View 对象也能控制；也不局限于 伸缩，透明，位移，旋转，其它变化也能 */
   private void startAnimation() {
     Point startPoint = new Point(RADIUS, RADIUS);
     Point endPoint = new Point(getWidth() - RADIUS, getHeight() - RADIUS);

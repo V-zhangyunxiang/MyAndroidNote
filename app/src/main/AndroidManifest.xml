@@ -9,13 +9,14 @@
   <application
     android:name="com.owl.TestApplication"
     android:allowBackup="true"
+    android:hardwareAccelerated="false"
     android:icon="@mipmap/ic_launcher"
     android:roundIcon="@drawable/ic_launcher_background"
     android:supportsRtl="true"
     android:theme="@style/Theme.AppCompat.Light.NoActionBar"
     tools:ignore="GoogleAppIndexingWarning">
 
-    <activity android:name="com.owl.android_simple.customview.AppBarLayoutTestActivity">
+    <activity android:name="com.owl.android_simple.customview.CustomViewTestActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
