@@ -36,8 +36,8 @@ import java.util.List;
 
  1 构造函数	     初始化(初始化画笔 Paint)
  2 onMeasure	   测量View的大小
- 3 onSizeChanged 确定View大小(记录当前View的宽高)
- 4 onLayout	     确定子View布局(无子View，不关心)
+ 3 onSizeChanged 确定View大小(记录当前 View 的宽高)
+ 4 onLayout	     确定子View布局(无子 View，不关心)
  5 onDraw	       实际绘制内容
  6 提供接口	     提供接口(提供设置数据的接口)
 * */

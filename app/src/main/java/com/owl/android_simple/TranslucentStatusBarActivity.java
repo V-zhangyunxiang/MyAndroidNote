@@ -68,7 +68,7 @@ public class TranslucentStatusBarActivity extends AppCompatActivity {
       }
     } else {
       // 加一个和 status bar 一样大小的 View 站位，从而让让标题栏不会与 status bar 重叠。而图片延伸到状态栏只需要设置
-      // FLAG_TRANSLUCENT_STATUS就OK
+      // FLAG_TRANSLUCENT_STATUS 就 OK
       activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
       ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
       View statusBarView = new View(activity);

@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.Path;
 import android.graphics.Picture;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -41,13 +42,59 @@ public class CanvasView extends View {
     // STROKE                //描边
     // FILL                  //填充
     // FILL_AND_STROKE       //描边加填充，表示会加上描边的宽度
-    mPaint.setStyle(Style.FILL);
+    mPaint.setStyle(Style.STROKE);
     // 描边宽度
     mPaint.setStrokeWidth(10);
     // 抗锯齿
     mPaint.setAntiAlias(true);
     // 设置文本字体大小
     mPaint.setTextSize(50);
+  }
+
+  /**
+   * MeasureSpec.UNSPECIFIED:子元素告诉父容器它希望它的宽高想要多大就要多大
+   *
+   * <p>MeasureSpec 将它的高 2 位用来代表测量模式 Mode，低 30 位用来代表数值大小 Size
+   *
+   * <p>MeasureSpec.EXACTLY :子元素是一个精确的数值
+   *
+   * <p>MeasureSpec.AT_MOST：子 View 希望它的宽或者高由自己决定，但不能超过父类提供的建议宽高
+   *
+   * <p>MeasureSpec.makeMeasureSpec():将 Mode 和 Size 组合成一个 measureSpec 数值
+   *
+   * <p>MeasureSpec.getMode()
+   *
+   * <p>MeasureSpec.getSize()
+   *
+   * @param widthMeasureSpec
+   * @param heightMeasureSpec
+   */
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+    int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+
+    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+    int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+    // resultW 代表最终设置的宽，resultH 代表最终设置的高
+    int resultW = widthSize;
+    int resultH = heightSize;
+
+    if (widthMode == MeasureSpec.AT_MOST) {
+      // resultW = contentW < widthSize ? contentW : widthSize;
+    }
+
+    if (heightMode == MeasureSpec.AT_MOST) {
+      // resultH = contentH < widthSize ? contentH : heightSize;
+    }
+    // setMeasuredDimension(resultW, resultH);
+  }
+
+  @Override
+  protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+    super.onLayout(changed, left, top, right, bottom);
   }
 
   // 录制内容方法
@@ -105,16 +152,16 @@ public class CanvasView extends View {
     //        mPaint);
     /** 绘制矩形 */
     // canvas.drawRect(200, 500, 600, 700, mPaint);
-    // Rect rect = new Rect(200, 500, 600, 700);
-    // rect.set(200, 500, 600, 700);
-    // canvas.drawRect(rect, mPaint);
+    //     Rect rect = new Rect(200, 500, 600, 700);
+    //     rect.set(200, 500, 600, 700);
+    //     canvas.drawRect(rect, mPaint);
 
     // RectF rectF = new RectF(200, 500, 600, 700);
     // rectF.set(200, 500, 600, 700);
     // canvas.drawRect(rectF, mPaint);
     /** Rect 和 RectF 的区别：最大的区别是精度不同，rect 是 int 的，rectF 是 float 的 */
 
-    /** 绘制圆角矩,30，30 表示圆弧的两个半径，30，30 这个点到 X,Y 轴包围的范围就是圆弧的角度，当 X，Y 分别 >= 矩形的宽高一半时，圆角矩形会变成一个椭圆 */
+    /** 绘制圆角矩形,30，30 表示圆弧的两个半径，30，30 这个点到 X,Y 轴包围的范围就是圆弧的角度，当 X，Y 分别 >= 矩形的宽高一半时，圆角矩形会变成一个椭圆 */
     // 第一种
     // RectF rectF = new RectF(100, 100, 800, 400);
     // canvas.drawRoundRect(rectF, 30, 30, mPaint);
@@ -132,19 +179,21 @@ public class CanvasView extends View {
     // canvas.drawCircle(300, 400, 200, mPaint);
 
     /**
-     * 绘制圆弧, 顺时针旋转为正角度方向(没有负角度，顺时针 0-360 度)，userCenter 表示是否使用中心点，如果使用，起点和终点会连向中心点，否则就只是起点和终点连线围起来的弧形
+     * 绘制圆弧, 顺时针旋转为正角度方向(没有负角度，sweepAngle取值范围是 [-360, 360) 度)
+     *
+     * <p>userCenter 表示是否使用中心点，如果使用，起点和终点会连向中心点，否则就只是起点和终点连线围起来的弧形
      */
     // startAngle  // 开始角度
     // sweepAngle  // 扫过角度
     // useCenter   // 是否使用中心
     // 第一种
+    // 绘制背景矩形
     //    RectF rectF = new RectF(100, 100, 800, 400);
-    //    // 绘制背景矩形
     //    mPaint.setColor(Color.GRAY);
     //    canvas.drawRect(rectF, mPaint);
     //    mPaint.setColor(Color.BLUE);
-    //    canvas.drawArc(rectF, 0, 90, false, mPaint);
-
+    // canvas.drawArc(rectF, 0, 90, false, mPaint);
+    //
     //    RectF rectF2 = new RectF(100, 600, 800, 900);
     //    // 绘制背景矩形
     //    mPaint.setColor(Color.GRAY);
@@ -250,16 +299,18 @@ public class CanvasView extends View {
 
     // 包装成为 Drawable
     // PictureDrawable drawable = new PictureDrawable(mPicture);
-    // 设置绘制区域,图形超出部分会被忽略 -- 注意此处所绘制的实际内容不会缩放
+    // 设置绘制区域,图形超出部分会被忽略
     // drawable.setBounds(0, 0, 250, 500);
     // 绘制
     // drawable.draw(canvas);
 
     /** BitMap 操作 */
+
     /** 三种 bitmap 获取方式 */
     // Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
     // BitmapFactory.decodeFile("/sdcard/bitmap.png");
     // BitmapFactory.decodeStream();
+
     /** 三种 canvas.drawBitmap 方式 */
     // 第一种
     // public void drawBitmap (Bitmap bitmap, Matrix matrix, Paint paint);
@@ -268,7 +319,6 @@ public class CanvasView extends View {
     // 第二种,指定了图片左上角的坐标(与坐标原点的距离)
     // public void drawBitmap (Bitmap bitmap, float left, float top, Paint paint);
     // canvas.drawBitmap(bitmap, 20, 30, new Paint());
-
     /**
      * Rect src 指定绘制图片的区域; Rect dst 或 RectF dst 指定图片在屏幕上显示(绘制)的区域
      *
@@ -285,12 +335,85 @@ public class CanvasView extends View {
     // Rect dst = new Rect(0, mHeight / 2, mWidth, mHeight);
     // 绘制图片
     // canvas.drawBitmap(bitmap, src, dst, null);
+    /** BitMap 操作 */
 
     /** 绘制文字 */
-    String str = "ABCDEFG";
-    // float x, float y 简单理解为字体的左下角坐标
-    // canvas.drawText(str, 200, 500, mPaint);
-    // int start, int end，截取 [x,y) 区间的字符串
-    canvas.drawText(str, 1, 3, 10, 10, mPaint);
+    //    String str = "ABCDEFG";
+    //    // float x, float y 简单理解为字体的左下角坐标
+    //    canvas.drawText(str, 200, 500, mPaint);
+    //    // int start, int end，截取 [x,y) 区间的字符串
+    //    canvas.drawText(str, 1, 3, mWidth / 2, mHeight / 2, mPaint);
+
+    /** path 路径 使用 Path 不仅能够绘制简单图形，也可以绘制比较复杂的图形; 根据路径绘制文本和剪裁画布都会用到 Path */
+
+    /** moveTo setLastPoint lineTo close */
+    // lineTo 上次操作结束的点到目标点的连线，如果没有进行过操作则默认点为坐标原点
+    // moveTo 改变下次操作的起点
+    // setLastPoint 重置上一次操作的最后一个点，与 moveTo 不同的是，会影响上一次点的坐标
+    // close 连接当前最后一个点和最初的点，如果连接了无法形成封闭图形，则 close 什么也不做
+    //    canvas.translate(mWidth / 2, mHeight / 2);
+    //    Path path = new Path();
+    //    // path.lineTo(100, 200);
+    //    path.lineTo(200, 200);
+    //    // path.moveTo(200, 100);
+    //    // path.setLastPoint(200, 100);
+    //    path.lineTo(200, 0);
+    //    path.close();
+    //    canvas.drawPath(path, mPaint);
+    /** addXxx Direction.CW 顺时针 Direction.CCW 逆时针 */
+    //    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
+    //    Path path = new Path();
+    //    path.addRect(-200, -200, 300, 200, Direction.CCW);
+    //    canvas.drawPath(path, mPaint);
+    /** 单纯使用 Direction.CW/CCW 看不出区别，需要配合 setLastPoint 才能看出明显区别 */
+    //    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
+    //    Path path = new Path();
+    //    path.addRect(-200, -200, 200, 200, Path.Direction.CCW);
+    //    path.setLastPoint(-300, 300); // <-- 重置最后一个点的位置
+    //    canvas.drawPath(path, mPaint);
+    /**
+     * public void addPath (Path src);
+     *
+     * <p>public void addPath (Path src, float dx, float dy); 将 src 进行了位移之后再添加进当前 path 中
+     *
+     * <p>public void addPath (Path src, Matrix matrix); 将 src 添加到当前 path 之前先使用 Matrix 进行变换
+     */
+    canvas.translate(0, mHeight / 2);
+    Path path2 = new Path();
+    Path src = new Path();
+    path2.addCircle(0, 0, 100, Path.Direction.CW);
+    src.addCircle(0, 0, 100, Path.Direction.CW);
+    for (int i = 0; i < 10; i++) {
+      path2.addPath(src, 200 * (i + 1), 0);
+      canvas.drawPath(path2, mPaint);
+    }
+    /**
+     * addArc arcTo 绘制圆弧
+     *
+     * <p>public void addArc (RectF oval, float startAngle, float sweepAngle)
+     *
+     * <p>public void arcTo(RectF oval, float startAngle, float sweepAngle)
+     *
+     * <p>public void arcTo(RectF oval, float startAngle, float sweepAngle, boolean forceMoveTo)
+     * forceMoveTo true(默认) -> 将最后一个点移动到圆弧起点，即不连接最后一个点与圆弧起点; false -> 不移动，而是连接最后一个点与圆弧起点
+     */
+
+    /** 其它 api */
+    //    path.isEmpty(); // path 是否为空
+    //    path.isRect(new RectF()); // 当前 path 是否是一个矩形
+    //    path.set(new Path()); // 将新的 path 赋值给当前 path
+    //    path.offset(300, 0); // 平移 path
+
+    // offset (float dx, float dy, Path dst) 将当前 path 平移后的状态存入 dst 中，不会影响当前 path
+    //    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
+    //    Path path = new Path(); // path 中添加一个圆形(圆心在坐标原点)
+    //    path.addCircle(0, 0, 100, Path.Direction.CW);
+    //    Path dst = new Path(); // dst 中添加一个矩形
+    //    dst.addRect(-200, -200, 200, 200, Path.Direction.CW);
+    //    path.offset(300, 0, dst); // 平移
+    //    canvas.drawPath(path, mPaint); // 绘制 path
+    //    mPaint.setColor(Color.BLUE); // 更改画笔颜色
+    //    canvas.drawPath(dst, mPaint); // 绘制dst
+    // 会发现 dst 绘制出来不是矩形，而是 offset 位移后的圆，说明 dst 有内容时，会清空 dst 并存入当前 path
   }
 }

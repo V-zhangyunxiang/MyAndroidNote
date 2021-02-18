@@ -19,6 +19,7 @@ import com.owl.android_simple.R;
 import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
 
 /**
  * Description
@@ -35,12 +36,12 @@ public class DrawableTestActivity extends AppCompatActivity {
     // setBitmapDrawable();
     // setClipDrawable();
     // ShapeDrawable 常用 XML 声明
-    // setLayerListDrawable();
+    setLayerListDrawable();
   }
 
   public void setBitmapDrawable() {
     ImageView imageView = findViewById(R.id.image_bitmap);
-    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.car);
     BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), bitmap);
     bitmapDrawable.getBitmap(); // BitmapDrawable 转换为 bitmap
     /*
@@ -63,7 +64,10 @@ public class DrawableTestActivity extends AppCompatActivity {
      */
     bitmapDrawable.setGravity(Gravity.CENTER);
     /*
-    平铺模式，当启用平铺模式时，重复位图;启用平铺模式时会忽略重力。 默认值是“禁用”
+    表示当位图小于容器时，执行“平铺”模式
+
+    平铺模式，启用平铺模式时会忽略重力。 默认值是“禁用”(缩放填充)
+
     clamp:复制边缘颜色。图片四周的像素会扩散到周围
 
     disabled:不要平铺位图。 这是默认值。
@@ -72,8 +76,8 @@ public class DrawableTestActivity extends AppCompatActivity {
 
     repeat:在水平和竖直方向上的平铺效果
     */
-    bitmapDrawable.setTileModeXY(TileMode.MIRROR, TileMode.MIRROR);
-    imageView.setImageDrawable(bitmapDrawable);
+    bitmapDrawable.setTileModeXY(TileMode.CLAMP, TileMode.CLAMP);
+    imageView.setBackground(bitmapDrawable);
   }
 
   /** 针对自身进行裁剪复制显示 setLevel [0-10000] */
@@ -83,7 +87,8 @@ public class DrawableTestActivity extends AppCompatActivity {
     clipDrawable.setLevel(0);
     subscription =
         Observable.interval(0, 1, TimeUnit.SECONDS)
-            .map(time -> time * 200)
+            .map(time -> time * 1000)
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 time -> {
                   Log.i("zyx", "time= " + time);
@@ -98,14 +103,13 @@ public class DrawableTestActivity extends AppCompatActivity {
   public void setLayerListDrawable() {
     Button mChangePhotoBtn = findViewById(R.id.btn_change_photo);
     ImageView mPhotoIv = findViewById(R.id.image_layerList);
-
     mChangePhotoBtn.setOnClickListener(
         v -> {
           LayerDrawable layerDrawable =
               (LayerDrawable) ContextCompat.getDrawable(this, R.drawable.drawable_layerlist_photo);
           // 获取替换的图片
-          Drawable drawable = ContextCompat.getDrawable(this, R.drawable.drawable_test_girl);
-          // 找到layer_drawable布局中需要更换的item，并替换成对应的图片
+          Drawable drawable = ContextCompat.getDrawable(this, R.drawable.car);
+          // 找到 layer_drawable 布局中需要更换的 item，并替换成对应的图片
           layerDrawable.setDrawableByLayerId(R.id.layer_photo, drawable);
           mPhotoIv.setImageDrawable(layerDrawable);
         });

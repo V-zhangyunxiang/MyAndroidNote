@@ -6,6 +6,6 @@
   <!--
   1、android:drawable 表示该 ClipDrawable 引用的 drawable 资源（这个属性必须有）。
   2、android:clipOrientation 表示裁剪的方向。horizontal：水平方向，vertical：垂直方向。
-  3、android:gravity 指定从哪个地方裁剪。必须是下面一个或多个值（多个值之间用“|”分隔）
+  3、android:gravity 指定从哪个地方裁剪。一个或多个值（多个值之间用“|”分隔）
   -->
 </clip>
