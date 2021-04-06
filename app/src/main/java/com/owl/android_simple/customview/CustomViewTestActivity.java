@@ -54,6 +54,7 @@ public class CustomViewTestActivity extends AppCompatActivity {
     setContentView(R.layout.custom_main_test);
   }
 
+  // 绘制饼状图
   private void setPieView() {
     // pieView = findViewById(R.id.pieView);
     List<PieData> data = new ArrayList<>();

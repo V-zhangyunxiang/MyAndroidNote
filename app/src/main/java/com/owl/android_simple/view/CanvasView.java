@@ -1,16 +1,44 @@
 package com.owl.android_simple.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.BlurMaskFilter;
+import android.graphics.BlurMaskFilter.Blur;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.CornerPathEffect;
+import android.graphics.DashPathEffect;
+import android.graphics.DiscretePathEffect;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
+import android.graphics.Paint.Cap;
+import android.graphics.Paint.FontMetrics;
+import android.graphics.Paint.Join;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
+import android.graphics.Path.Direction;
+import android.graphics.PathEffect;
 import android.graphics.Picture;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.Typeface;
+import android.graphics.drawable.PictureDrawable;
 import android.support.annotation.Nullable;
+import android.text.Layout.Alignment;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import com.owl.android_simple.R;
+import java.util.Locale;
 
 /**
  * Description
@@ -18,6 +46,7 @@ import android.view.View;
  * @author zhangyunxiang Date 2021/1/28 14:56
  */
 public class CanvasView extends View {
+  // 创建 Paint 对象的时候，构造方法的参数里加一个 ANTI_ALIAS_FLAG 的 flag，就可以在初始化的时候就开启抗锯齿
   Paint mPaint = new Paint();
   Picture mPicture = new Picture();
   int mWidth;
@@ -37,18 +66,212 @@ public class CanvasView extends View {
   private void initPaint() {
     Log.i("zyx", "initPaint");
     // 设置笔颜色
+    // 基础颜色-ColorFilter-Xfermode
+    // 直接设置颜色的 API 用来给图形和文字设置颜色
+    // setColorFilter() 用来基于颜色进行过滤处理
+    // setXfermode() 用来处理源图像和 View 已有内容的关系
     mPaint.setColor(Color.BLACK);
+    // mPaint.setColor(Color.parseColor("#009688"));
     // 设置笔渲染模式
     // STROKE                //描边
     // FILL                  //填充
     // FILL_AND_STROKE       //描边加填充，表示会加上描边的宽度
     mPaint.setStyle(Style.STROKE);
     // 描边宽度
-    mPaint.setStrokeWidth(10);
+    mPaint.setStrokeWidth(0);
     // 抗锯齿
     mPaint.setAntiAlias(true);
     // 设置文本字体大小
     mPaint.setTextSize(50);
+    // 设置字体
+    mPaint.setTypeface(Typeface.SERIF);
+    //    mPaint.setTypeface(
+    //        Typeface.createFromAsset(getContext().getAssets(), "futura_bold_italic_font.ttf"));
+    // 设置粗体
+    mPaint.setFakeBoldText(false);
+    // 设置文字对齐方式,该设置影响 drawText x 坐标的位置,x 根据对齐方式而定，默认是 left，指在文字的左边
+    mPaint.setTextAlign(Align.LEFT);
+    // 设置绘制使用的 locale
+    mPaint.setTextLocale(Locale.CHINA);
+    // 设置删除线
+    mPaint.setStrikeThruText(false);
+    // 设置下划线
+    mPaint.setUnderlineText(false);
+    // 设置文字横向错切角度,文字倾斜度
+    mPaint.setTextSkewX(0);
+    // 设置文字横向缩放，也就是每个字符变胖变瘦
+    // 值> 1.0 会使文本更宽。值 <1.0 将缩小文本范围
+    mPaint.setTextScaleX(1);
+    // 设置字符间距,负值会拉紧文本
+    mPaint.setLetterSpacing(0);
+    // 获取推荐的行距
+    mPaint.getFontSpacing();
+    // 获取 paint 的 FontMetrics
+    FontMetrics fontMetrics = mPaint.getFontMetrics();
+    //    fontMetrics.top;
+    //    fontMetrics.ascent;
+    //    fontMetrics.descent;
+    //    fontMetrics.bottom;
+    // 抖动
+    mPaint.setDither(true);
+    // 双线性过滤
+    mPaint.setFilterBitmap(true);
+    // 重置 paint 的所有属性
+    // mPaint.reset();
+    // 将目标 paint 属性复制到当前 paint 中
+    // mPaint.set(new Paint());
+    // 批量设置 flags;相当于依次调用它们的 set 方法
+    // mPaint.setFlags(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+  }
+
+  public void setStrokeCap(Canvas canvas) {
+    mPaint.setStrokeWidth(60);
+    // 设置线条形状
+    // BUTT 平头、ROUND 圆头、SQUARE 方头。默认为 BUTT
+    mPaint.setStrokeCap(Cap.BUTT);
+    canvas.drawLine(500, 700, 1000, 700, mPaint);
+    mPaint.setStrokeCap(Cap.SQUARE);
+    canvas.drawLine(500, 900, 1000, 900, mPaint);
+    mPaint.setStrokeCap(Cap.ROUND);
+    canvas.drawLine(500, 1100, 1000, 1100, mPaint);
+  }
+
+  public void setStrokeJoin(Canvas canvas) {
+    // 设置拐角形状
+    mPaint.setStrokeWidth(60);
+    // 设置 MITER 型拐角的延长线的最大值
+    mPaint.setStrokeMiter(4);
+    // MITER 尖角  BEVEL 平角  ROUND 圆角 默认为 MITER
+    mPaint.setStrokeJoin(Join.ROUND);
+    Path path = new Path();
+    path.moveTo(mWidth / 2, mHeight / 2);
+    path.lineTo((mWidth / 2) + 500, mHeight / 2);
+    path.lineTo((mWidth / 2) + 500, (mHeight / 2) + 600);
+    path.lineTo((mWidth / 2), (mHeight / 2) + 600);
+    canvas.drawPath(path, mPaint);
+  }
+
+  /**
+   * PathEffect 给图形的轮廓设置效果,分为两类
+   *
+   * <p>单一效果的 CornerPathEffect(拐角变成圆角)
+   *
+   * <p>DiscretePathEffect(定长的线段拼接，并随机偏离)
+   *
+   * <p>DashPathEffect(虚线)
+   *
+   * <p>PathDashPathEffect(Path shape, float advance, float phase, Style style)(使用一个 Path 来绘制虚线)
+   * shape 参与绘制的 path，advance两个相邻 shape 的距离(两个 shape 起点的距离) phase 虚线的偏移
+   *
+   * <p>style，是用来指定拐弯改变的时候 shape 的转换方式
+   *
+   * <p>TRANSLATE：位移 ROTATE：旋转 MORPH：变体
+   *
+   * <p>组合效果的 SumPathEffect ComposePathEffect
+   */
+  public void setCornerPathEffect(Canvas canvas) {
+    // 把所有拐角变成圆角,20 指圆角的半径
+    PathEffect cornerPathEffect = new CornerPathEffect(20);
+    // segmentLength 是用来拼接的每个线段的长度, deviation 是偏离量
+    PathEffect discretePathEffect = new DiscretePathEffect(10, 30);
+    // 数组指定了虚线的格式：数组中元素必须为偶数（最少 2 个)按照「画线长度、空白长度、画线长度、空白长度」……的顺序排列; phase 是虚线的偏移量
+    PathEffect dashPathEffect = new DashPathEffect(new float[] {10, 10, 20, 10}, 0);
+
+    mPaint.setPathEffect(dashPathEffect);
+    Path path = new Path();
+    path.moveTo(mWidth / 2, mHeight / 2);
+    path.lineTo((mWidth / 2) + 500, mHeight / 2);
+    path.lineTo((mWidth / 2) + 500, (mHeight / 2) + 600);
+    path.lineTo((mWidth / 2), (mHeight / 2) + 600);
+    canvas.drawPath(path, mPaint);
+  }
+
+  /** 绘制内容下面加一层阴影 */
+  public void setShadowLayer(Canvas canvas) {
+    // 10 是阴影的模糊范围 0,0 是阴影的偏移量 red 是阴影的颜色
+    // 清除阴影层，使用 mPaint.clearShadowLayer()
+    mPaint.setShadowLayer(10, 0, 0, Color.RED);
+    String text = "Hello World";
+    canvas.drawText(text, 80, 300, mPaint);
+  }
+
+  /**
+   * 在绘制层上方的附加效果
+   *
+   * <p>MaskFilter 有两种： BlurMaskFilter 和 EmbossMaskFilter
+   *
+   * <p>BlurMaskFilter 模糊效果
+   *
+   * <p>EmbossMaskFilter 浮雕效果
+   */
+  public void setMaskFilter(Canvas canvas) {
+    // radius 参数是模糊的范围， style 是模糊的类型
+    // BlurMaskFilter.Blur
+    // NORMAL: 内外都模糊绘制
+    // SOLID: 内部正常绘制，外部模糊
+    // INNER: 内部模糊，外部不绘制
+    // OUTER: 内部不绘制，外部模糊(一个白色的背景盖在图片上)
+    mPaint.setMaskFilter(new BlurMaskFilter(50, Blur.OUTER));
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
+    canvas.drawBitmap(bitmap, 100, 100, mPaint);
+  }
+
+  public void drawBitmapShader(Canvas canvas) {
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
+    Shader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+    mPaint.setStyle(Style.FILL);
+    mPaint.setShader(shader);
+    canvas.drawCircle(mWidth / 2, mHeight / 2, 300, mPaint);
+  }
+
+  /**
+   * 测量文字的宽度并返回
+   *
+   * <p>measureText 测量出来的宽度总是比 getTextBounds 大一点
+   *
+   * <p>measureText 测量的是文字占用的宽度
+   *
+   * <p>getTextBounds 测量的是文字显示的宽度，而文字本身是带有空隙的
+   */
+  public void measureText(Canvas canvas) {
+    String str = "Hello World";
+    canvas.drawText(str, mWidth / 2, mHeight / 2, mPaint);
+    float width = mPaint.measureText(str);
+    canvas.drawLine(mWidth / 2, mHeight / 2, (mWidth / 2) + width, mHeight / 2, mPaint);
+  }
+
+  /**
+   * 获取文字的显示范围
+   *
+   * <p>text 要显示的文字，start 和 end 分别是文字的起始和结束位置，bounds 是存储文字显示范围的对象，方法在测算完成之后会把结果写进 bounds
+   *
+   * <p>getTextBounds(String text, int start, int end, Rect bounds)
+   */
+  public void getTextBounds(Canvas canvas) {
+    String str = "Hello World";
+    canvas.drawText(str, mWidth / 2, mHeight / 2, mPaint);
+    Rect rect = new Rect();
+    mPaint.getTextBounds(str, 0, str.length(), rect);
+    // 对齐方式 left 前提下，此时 rect 保存的坐标是以文字左下角坐标为原点计算的
+    Log.i(
+        "zyx",
+        "left= "
+            + rect.left
+            + "\n"
+            + "top= "
+            + rect.top
+            + "\n"
+            + "right= "
+            + rect.right
+            + "\n"
+            + "bottom= "
+            + rect.bottom);
+    rect.set(
+        rect.left + (mWidth / 2),
+        rect.top + (mHeight / 2),
+        rect.right + (mWidth / 2),
+        rect.bottom + (mHeight / 2));
+    canvas.drawRect(rect, mPaint);
   }
 
   /**
@@ -97,7 +320,6 @@ public class CanvasView extends View {
     super.onLayout(changed, left, top, right, bottom);
   }
 
-  // 录制内容方法
   /**
    * 使用 Picture 前最好关闭硬件加速，以免引起不必要的问题；可以把 Picture 看作是一个录制 Canvas 操作的录像机
    *
@@ -132,147 +354,235 @@ public class CanvasView extends View {
     mHeight = h;
   }
 
+  /**
+   * Android 绘制都是按顺序的，先绘制的内容会被后绘制的内容覆盖
+   *
+   * <p>在继承已有控件的基础上添加绘制代码时，需要考虑代码的绘制顺序
+   *
+   * <p>当存在子 View 时，每一个 ViewGroup 会先调用自己的 onDraw() 来绘制完自己的主体之后再去绘制它的子 View
+   *
+   * <p>完整的绘制过程
+   *
+   * <p>1. 背景 ： 发生在 drawBackground 方法中，但此方法是 private 的，一般在 XML 或者 Java 代码中设置
+   *
+   * <p>2. 主体(onDraw)
+   *
+   * <p>3. 子 View(dispatchDraw)
+   *
+   * <p>4. 滑动边缘渐变和滑动条 XML 或者 setScrollBar 系列
+   *
+   * <p>5 前景(6.0 以上) XML 或者 setForeground 设置
+   *
+   * <p>也可以重写 draw 方法，将绘制代码设置在 super.draw 前或者后
+   */
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    /** 绘制颜色 */
-    // canvas.drawColor(Color.BLUE);
-    /** 绘制点 */
-    // canvas.drawPoint(200, 200, mPaint);
-    /** 绘制一组点 */
-    // canvas.drawPoints(new float[] {500, 500, 500, 600, 500, 700}, mPaint);
-    /** 绘制一条直线 */
-    // canvas.drawLine(300, 300, 500, 600, mPaint);
-    /** 绘制一组线 每四数字(两个点的坐标)确定一条线 */
-    //    canvas.drawLines(
-    //        new float[] {
-    //          100, 200, 200, 200,
-    //          100, 300, 200, 300
-    //        },
-    //        mPaint);
-    /** 绘制矩形 */
+    booleanCompute(canvas);
+  }
+
+  // 绘制子 View
+  @Override
+  protected void dispatchDraw(Canvas canvas) {
+    super.dispatchDraw(canvas);
+  }
+
+  // 绘制滑动边缘渐变和滑动条、前景色
+  @Override
+  public void onDrawForeground(Canvas canvas) {
+    super.onDrawForeground(canvas);
+  }
+
+  /**
+   * 硬件加速 : 指把绘制 View 的计算工作交给 GPU 来处理
+   *
+   * <p>未开启硬件加速时，View 的绘制是由 CPU 将绘制内容通过 CPU 转换成像素信息再显示到屏幕上
+   *
+   * <p>开启硬件加速后，CPU 将绘制内容交给 GPU 操作，最终由 GPU 完成渲染工作
+   *
+   * <p>硬件加速的好处：1. GPU 相较于 CPU 对于图形计算有更大的优势 2. 绘制机制的不同，导致界面重绘时刷新效率极大提高(GPU 重绘时只更新需要更新的
+   * View，而关闭硬件加速后需要全部重绘)
+   *
+   * <p>硬件加速的弊端：canvas 的一些 API 在硬件加速下无法生效
+   */
+  private void hardwareSpeed() {
+    // LAYER_TYPE_SOFTWARE 软件加速，开启时会自动关闭硬件加速
+    // LAYER_TYPE_HARDWARE 硬件加速
+    // 离屏缓冲，开启硬件加速后，单独启用一块地方绘制该 View，绘制内容会被缓存下来，在进行移动、伸缩、旋转、透明等无需 invalidate
+    // 的属性动画时可以开启硬件加速来极大提高动画执行的效率, 不适用于基于自定义属性绘制的动画
+    setLayerType(LAYER_TYPE_HARDWARE, null);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(this, "rotationY", 180);
+    animator.addListener(
+        new AnimatorListenerAdapter() {
+          @Override
+          public void onAnimationEnd(Animator animation) {
+            setLayerType(LAYER_TYPE_NONE, null);
+          }
+        });
+    animator.start();
+  }
+
+  /** 绘制颜色 */
+  private void drawColor(Canvas canvas) {
+    canvas.drawColor(Color.BLUE);
+  }
+
+  /** 绘制点 */
+  private void drawPoint(Canvas canvas) {
+    canvas.drawPoint(200, 200, mPaint);
+    canvas.drawPoints(new float[] {500, 500, 500, 600, 500, 700}, mPaint);
+  }
+
+  /** 绘制一条直线 */
+  private void drawLine(Canvas canvas) {
+    canvas.drawLine(300, 300, 500, 600, mPaint);
+    // 绘制一组线 每四数字(两个点的坐标)确定一条线
+    canvas.drawLines(new float[] {100, 200, 200, 200, 100, 300, 200, 300}, mPaint);
+  }
+
+  /** 绘制矩形 */
+  /** Rect 和 RectF 的区别：最大的区别是精度不同，rect 是 int 的，rectF 是 float 的 */
+  private void drawRect(Canvas canvas) {
     // canvas.drawRect(200, 500, 600, 700, mPaint);
-    //     Rect rect = new Rect(200, 500, 600, 700);
-    //     rect.set(200, 500, 600, 700);
-    //     canvas.drawRect(rect, mPaint);
 
-    // RectF rectF = new RectF(200, 500, 600, 700);
-    // rectF.set(200, 500, 600, 700);
-    // canvas.drawRect(rectF, mPaint);
-    /** Rect 和 RectF 的区别：最大的区别是精度不同，rect 是 int 的，rectF 是 float 的 */
+    Rect rect = new Rect();
+    rect.set(200, 500, 600, 700);
+    canvas.drawRect(rect, mPaint);
+  }
 
-    /** 绘制圆角矩形,30，30 表示圆弧的两个半径，30，30 这个点到 X,Y 轴包围的范围就是圆弧的角度，当 X，Y 分别 >= 矩形的宽高一半时，圆角矩形会变成一个椭圆 */
+  /** 绘制圆角矩形,30,30 表示圆弧的两个半径，30,30 这个点到 X,Y 轴包围的范围就是圆弧的角度,当 X,Y 分别 >= 矩形的宽高一半时，圆角矩形会变成一个椭圆 */
+  private void drawRoundRect(Canvas canvas) {
     // 第一种
-    // RectF rectF = new RectF(100, 100, 800, 400);
-    // canvas.drawRoundRect(rectF, 30, 30, mPaint);
+    RectF rectF = new RectF(100, 100, 800, 400);
+    canvas.drawRoundRect(rectF, 30, 30, mPaint);
     // 第二种
-    // canvas.drawRoundRect(100, 100, 800, 400, 360, 160, mPaint);
+    canvas.drawRoundRect(100, 100, 800, 400, 360, 160, mPaint);
+  }
 
-    /** 绘制椭圆,实际上就是绘制一个矩形的内切图形,传递的 左上右下 实际是矩形的坐标; 如果长宽相等，就是一个圆 */
+  /** 绘制椭圆,实际上就是绘制一个矩形的内切图形,传递的 左上右下 实际是矩形的坐标; 如果长宽相等，就是一个圆 */
+  private void drawOval(Canvas canvas) {
     // 第一种
-    // RectF rectF = new RectF(100, 100, 700, 400);
-    // canvas.drawOval(rectF, mPaint);
+    RectF rectF = new RectF(100, 100, 700, 400);
+    canvas.drawOval(rectF, mPaint);
     // 第二种
-    // canvas.drawOval(100, 100, 800, 400, mPaint);
+    canvas.drawOval(100, 100, 800, 400, mPaint);
+  }
 
-    // 绘制圆, cx、cy 表示圆心坐标，radius 表示半径
-    // canvas.drawCircle(300, 400, 200, mPaint);
+  /** 绘制圆, cx、cy 表示圆心坐标,radius 表示半径 */
+  private void drawCircle(Canvas canvas) {
+    canvas.drawCircle(300, 400, 200, mPaint);
+  }
 
-    /**
-     * 绘制圆弧, 顺时针旋转为正角度方向(没有负角度，sweepAngle取值范围是 [-360, 360) 度)
-     *
-     * <p>userCenter 表示是否使用中心点，如果使用，起点和终点会连向中心点，否则就只是起点和终点连线围起来的弧形
-     */
-    // startAngle  // 开始角度
-    // sweepAngle  // 扫过角度
-    // useCenter   // 是否使用中心
-    // 第一种
+  /**
+   * 绘制圆弧, 顺时针旋转为正角度方向(sweepAngle取值范围是 [-360, 360) 度)
+   *
+   * <p>在默认的屏幕坐标系中角度增大方向为顺时针
+   *
+   * <p>userCenter 表示是否使用中心点，如果使用，起点和终点会连向中心点，否则就只是起点和终点连线围起来的弧形
+   *
+   * <p>startAngle 开始角度 sweepAngle 扫过角度 useCenter 是否使用中心
+   */
+  private void drawArc(Canvas canvas) {
     // 绘制背景矩形
-    //    RectF rectF = new RectF(100, 100, 800, 400);
-    //    mPaint.setColor(Color.GRAY);
-    //    canvas.drawRect(rectF, mPaint);
-    //    mPaint.setColor(Color.BLUE);
-    // canvas.drawArc(rectF, 0, 90, false, mPaint);
-    //
-    //    RectF rectF2 = new RectF(100, 600, 800, 900);
-    //    // 绘制背景矩形
-    //    mPaint.setColor(Color.GRAY);
-    //    canvas.drawRect(rectF2, mPaint);
-    //    // 绘制圆弧
-    //    mPaint.setColor(Color.BLUE);
-    //    canvas.drawArc(rectF2, 0, 90, true, mPaint);
-    // ------------------------------------ 下面是画布 --------------------------------------------
-    /** 画布操作. 所有的画布操作都只影响后续的绘制，对之前已经绘制过的内容没有影响 */
+    RectF rectF = new RectF(100, 100, 800, 400);
+    mPaint.setColor(Color.GRAY);
+    canvas.drawRect(rectF, mPaint);
+    // 绘制圆弧
+    mPaint.setColor(Color.BLUE);
+    canvas.drawArc(rectF, 0, 90, false, mPaint);
 
-    /** 位移，将画布圆心移动到指定位置。位移是基于当前位置移动，而不是每次基于屏幕左上角的 (0,0) 点移动 */
-    //    mPaint.setColor(Color.BLACK);
-    //    canvas.translate(200, 200);
-    //    canvas.drawCircle(0, 0, 100, mPaint);
-    //
-    //    mPaint.setColor(Color.BLUE);
-    //    canvas.translate(200, 200);
-    //    canvas.drawCircle(0, 0, 100, mPaint);
+    RectF rectF2 = new RectF(100, 600, 800, 900);
+    // 绘制背景矩形
+    mPaint.setColor(Color.GRAY);
+    canvas.drawRect(rectF2, mPaint);
+    // 绘制圆弧
+    mPaint.setColor(Color.BLUE);
+    canvas.drawArc(rectF2, 0, 90, true, mPaint);
+  }
 
-    /** 缩放，缩放的中心默认为坐标原点,而缩放中心轴就是坐标轴; 当缩放比例为负数的时候会根据缩放中心轴进行翻转(可以看做是对折) */
-    // 将坐标系原点移动到画布正中心，可以看做是先根据缩放中心(坐标原点)缩放到原来的 0.5 倍，然后分别按照 x 轴和 y 轴进行翻转
-    //    canvas.translate(getWidth() / 2, getHeight() / 2);
-    //    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
-    //    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
-    //    canvas.drawRect(rect, mPaint);
-    //
-    //    canvas.scale(-0.5f, -0.5f, 200, 0); // 画布缩放  <-- 缩放中心向右偏移了200个单位,中心轴也向右移动了
-    //
-    //    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
-    //    canvas.drawRect(rect, mPaint);
+  /** 画布操作. 所有的画布操作都只影响后续的绘制，对之前已经绘制过的内容没有影响 */
+
+  /** 位移，将画布圆心移动到指定位置。位移是基于当前位置移动,而不是每次基于屏幕左上角的 (0,0) 点移动 */
+  private void canvasTranslate(Canvas canvas) {
+    mPaint.setColor(Color.BLACK);
+    canvas.translate(200, 200);
+    canvas.drawCircle(0, 0, 100, mPaint);
+
+    mPaint.setColor(Color.BLUE);
+    canvas.translate(200, 200);
+    canvas.drawCircle(0, 0, 100, mPaint);
+  }
+
+  /** 缩放，缩放的中心默认为坐标原点,而缩放中心轴就是坐标轴; 当缩放比例为负数的时候会根据缩放中心轴进行翻转(可以看做是对折) */
+  private void canvasScale(Canvas canvas) {
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
+    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
+    canvas.drawRect(rect, mPaint);
+
+    // 先根据缩放中心(坐标原点)缩放到原来的 0.5 倍，然后分别按照 x 轴和 y 轴进行翻转
+    canvas.scale(-0.5f, -0.5f, 200, 0); // 画布缩放  <-- 缩放中心向右偏移了200个单位,中心轴也向右移动了
+    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
+    canvas.drawRect(rect, mPaint);
 
     // 缩放也是可以叠加的，缩放比例相乘
-    //    mPaint.setStyle(Style.STROKE);
-    //    canvas.translate(getWidth() / 2, getHeight() / 2);
-    //    RectF rect = new RectF(-400, -400, 400, 400); // 矩形区域
-    //    for (int i = 0; i <= 20; i++) {
-    //      canvas.scale(0.9f, 0.9f);
-    //      canvas.drawRect(rect, mPaint);
-    //    }
-    /** 旋转;默认的旋转中心依旧是坐标原点;旋转角度也是可以叠加的(相加) */
-    // 将坐标系原点移动到画布正中心
-    //    canvas.translate(getWidth() / 2, getHeight() / 2);
-    //    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
-    //    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
-    //    canvas.drawRect(rect, mPaint);
-    //    canvas.rotate(180); // 旋转180度 <-- 默认旋转中心为原点
-    //    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
-    //    canvas.drawRect(rect, mPaint);
+    mPaint.setStyle(Style.STROKE);
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect2 = new RectF(-400, -400, 400, 400); // 矩形区域
+    for (int i = 0; i <= 20; i++) {
+      canvas.scale(0.9f, 0.9f);
+      canvas.drawRect(rect2, mPaint);
+    }
+  }
 
-    // 将坐标系原点移动到画布正中心
-    //    canvas.translate(getWidth() / 2, getHeight() / 2);
-    //    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
-    //    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
-    //    canvas.drawRect(rect, mPaint);
-    //    canvas.rotate(180, 200, 0); // 旋转180度 <-- 旋转中心向右偏移200个单位
-    //    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
-    //    canvas.drawRect(rect, mPaint);
+  /** 旋转:默认的旋转中心依旧是坐标原点; 旋转角度也是可以叠加的(相加) */
+  private void canvasRotate(Canvas canvas) {
+    // 示例一
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
+    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
+    canvas.drawRect(rect, mPaint);
 
-    //    mPaint.setStyle(Style.STROKE);
-    //    canvas.translate(getWidth() / 2, getHeight() / 2);
-    //    canvas.drawCircle(0, 0, 400, mPaint); // 绘制两个圆形
-    //    canvas.drawCircle(0, 0, 380, mPaint);
-    //    for (int i = 0; i <= 360; i += 10) { // 绘制圆形之间的连接线
-    //      canvas.drawLine(0, 380, 0, 400, mPaint);
-    //      canvas.rotate(10);
-    //    }
-    /** 错切(skew)，特殊类型的线性变换 */
-    // 将坐标系原点移动到画布正中心
-    //    canvas.translate(getWidth() / 2, getHeight() / 2);
-    //    RectF rect = new RectF(0, 0, 200, 200); // 矩形区域
-    //    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
-    //    canvas.drawRect(rect, mPaint);
+    canvas.rotate(180); // 旋转180度 <-- 默认旋转中心为原点
+    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
+    canvas.drawRect(rect, mPaint);
+
+    // 示例二
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect2 = new RectF(0, -400, 400, 0); // 矩形区域
+    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
+    canvas.drawRect(rect, mPaint);
+
+    canvas.rotate(180, 200, 0); // 旋转180度 <-- 旋转中心向右偏移200个单位
+    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
+    canvas.drawRect(rect2, mPaint);
+
+    // 示例三
+    mPaint.setStyle(Style.STROKE);
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    canvas.drawCircle(0, 0, 400, mPaint); // 绘制两个圆形
+    canvas.drawCircle(0, 0, 380, mPaint);
+    for (int i = 0; i <= 360; i += 10) { // 绘制圆形之间的连接线
+      canvas.drawLine(0, 380, 0, 400, mPaint);
+      canvas.rotate(10);
+    }
+  }
+
+  /** 错切(skew)，特殊类型的线性变换 */
+  private void canvasSkew(Canvas canvas) {
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect = new RectF(0, 0, 200, 200); // 矩形区域
+    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
+    canvas.drawRect(rect, mPaint);
     /** float sx, float sy ; sx x 方向上倾斜角度的 tan 值，sy 是 y 轴上的 tan 值 */
-    //    canvas.skew(1, 0); // 水平错切 <- 45度
-    //    mPaint.setStyle(Style.STROKE);
-    //    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
-    //    canvas.drawRect(rect, mPaint);
+    canvas.skew(1, 0); // 水平错切 <- 45度
+    mPaint.setStyle(Style.STROKE);
+    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
+    canvas.drawRect(rect, mPaint);
+  }
 
-    // --------------------------------- 以下是 canvas 的相关 api -------------------------------------
+  // 上面针对画布的操作，一般都需要配合下面的组合使用,避免对后面的代码产生影响
+  private void saveRestore() {
     // restore
     // 状态回滚，就是从栈顶取出一个状态然后根据内容进行恢复，调用一次 restore 方法则将状态栈中第5次取出，根据里面保存的状态进行状态恢复
     // restoreToCount
@@ -285,40 +595,45 @@ public class CanvasView extends View {
     //    save();      //保存状态
     //    ...          //具体操作
     //    restore();   //回滚到之前的状态
+  }
 
-    /** Picture 操作 */
-    //  让存储在 picture 中的 canvas 绘制出来，有 3 种方法
-    //  1. 调用 mPicture.draw(canvas); 会影响Canvas的状态
-    //  2. canvas.drawPicture 使用 Canvas 提供的 drawPicture 方法绘制
-    //  3. 将 Picture 包装成为 PictureDrawable，使用 PictureDrawable 的 draw 方法绘制
+  private void drawPicture(Canvas canvas) {
+    // 让存储在 picture 中的 canvas 绘制出来，有 3 种方法
 
-    // mPicture.draw(canvas);
+    // 1.调用 mPicture.draw(canvas); 会影响Canvas的状态
+    mPicture.draw(canvas);
 
-    // canvas.drawPicture(mPicture);
-    // canvas.drawPicture(mPicture, new RectF(0, 0, 50, 200)); // 该处 rect 暂时不清楚作用
+    // 2.canvas.drawPicture 使用 Canvas 提供的 drawPicture 方法绘制
+    canvas.drawPicture(mPicture);
+    canvas.drawPicture(mPicture, new RectF(0, 0, 50, 200)); // 该处 rect 暂时不清楚作用
 
-    // 包装成为 Drawable
-    // PictureDrawable drawable = new PictureDrawable(mPicture);
+    // 3.将 Picture 包装成为 PictureDrawable，使用 PictureDrawable 的 draw 方法绘制
+    PictureDrawable drawable = new PictureDrawable(mPicture);
     // 设置绘制区域,图形超出部分会被忽略
-    // drawable.setBounds(0, 0, 250, 500);
+    drawable.setBounds(0, 0, 250, 500);
     // 绘制
-    // drawable.draw(canvas);
+    drawable.draw(canvas);
+  }
 
-    /** BitMap 操作 */
-
-    /** 三种 bitmap 获取方式 */
-    // Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
-    // BitmapFactory.decodeFile("/sdcard/bitmap.png");
-    // BitmapFactory.decodeStream();
-
-    /** 三种 canvas.drawBitmap 方式 */
+  /**
+   * 三种 bitmap 获取方式
+   *
+   * <p>BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
+   *
+   * <p>BitmapFactory.decodeFile("/sdcard/bitmap.png");
+   *
+   * <p>BitmapFactory.decodeStream();
+   */
+  private void drawBitmap(Canvas canvas) {
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
     // 第一种
     // public void drawBitmap (Bitmap bitmap, Matrix matrix, Paint paint);
-    // canvas.drawBitmap(bitmap,new Matrix(),new Paint());
+    canvas.drawBitmap(bitmap, new Matrix(), new Paint());
 
     // 第二种,指定了图片左上角的坐标(与坐标原点的距离)
     // public void drawBitmap (Bitmap bitmap, float left, float top, Paint paint);
-    // canvas.drawBitmap(bitmap, 20, 30, new Paint());
+    canvas.drawBitmap(bitmap, 20, 30, new Paint());
+
     /**
      * Rect src 指定绘制图片的区域; Rect dst 或 RectF dst 指定图片在屏幕上显示(绘制)的区域
      *
@@ -328,92 +643,260 @@ public class CanvasView extends View {
     // public void drawBitmap (Bitmap bitmap, Rect src, Rect dst, Paint paint);
     // public void drawBitmap (Bitmap bitmap, Rect src, RectF dst, Paint paint);
     // 指图片显示部分(左上角的四分之一)
-    // Rect src = new Rect(0, 0, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
+    Rect src1 = new Rect(0, 0, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
     // 显示图片的全部
-    // Rect src = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+    Rect src2 = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
     // 指定图片在屏幕上显示的区域
-    // Rect dst = new Rect(0, mHeight / 2, mWidth, mHeight);
+    Rect dst = new Rect(0, mHeight / 2, mWidth, mHeight);
     // 绘制图片
-    // canvas.drawBitmap(bitmap, src, dst, null);
-    /** BitMap 操作 */
+    canvas.drawBitmap(bitmap, src1, dst, null);
+  }
 
-    /** 绘制文字 */
-    //    String str = "ABCDEFG";
-    //    // float x, float y 简单理解为字体的左下角坐标
-    //    canvas.drawText(str, 200, 500, mPaint);
-    //    // int start, int end，截取 [x,y) 区间的字符串
-    //    canvas.drawText(str, 1, 3, mWidth / 2, mHeight / 2, mPaint);
+  /**
+   * 绘制文字
+   *
+   * <p>public void drawText (String text, float x, float y, Paint paint)
+   *
+   * <p>public void drawText(String text, int start, int end, float x, float y, Paint paint)
+   *
+   * <p>public void drawPosText (String text, float[] pos, Paint paint)
+   *
+   * <p>drawTextOnPath(String text, Path path, float hOffset, float vOffset, Paint paint)
+   *
+   * <p>drawPosText float[] 指定每个字符的 x、y 坐标;必须指定所有字符位置,否则直接 crash 掉,且性能差,该 api 已弃用
+   *
+   * <p>drawText() 方法参数中的 y 值,就是指定的基线的位置,用来让所有文字互相对齐的基准线; x 并不是文字真实的位置,会往左一点点
+   * 因为文字本身是有空隙的，宽度略大于实际显示的宽度
+   */
+  private void drawText(Canvas canvas) {
+    String str = "中华人民共和国";
+    // float x, float y 简单理解为字体的左下角坐标
+    canvas.drawText(str, 200, 500, mPaint);
+    // int start, int end，截取 [x,y) 区间的字符串
+    // canvas.drawText(str, 1, 3, mWidth / 2, mHeight / 2, mPaint);
+    // 沿着一条 Path 来绘制文字, hOffset 和 vOffset 文字相对于 Path 的水平偏移量和竖直偏移量
+    // 设置 hOffset 为 5, vOffset 为 10, 文字就会右移 5 像素和下移 10 像素
+    // canvas.drawTextOnPath(str, new Path(), 0, 0, mPaint);
+  }
 
-    /** path 路径 使用 Path 不仅能够绘制简单图形，也可以绘制比较复杂的图形; 根据路径绘制文本和剪裁画布都会用到 Path */
+  /**
+   * StaticLayout 换行绘制文字
+   *
+   * <p>与 canvas drawText 相比，StaticLayout 能在 view 的边缘自动折行，也能识别 \n 换行符
+   *
+   * <p>width 是文字区域的宽度，文字到达这个宽度后就会自动换行
+   *
+   * <p>align 是文字的对齐方向
+   *
+   * <p>spacingmult 是行间距的倍数，通常情况下填 1 就好
+   *
+   * <p>spacingadd 是行间距的额外增加值，通常情况下填 0 就好
+   *
+   * <p>includeadd 是指是否在文字上下添加额外的空间，来避免某些过高的字符的绘制出现越界
+   */
+  private void drawWrapText(Canvas canvas) {
+    String str = "a\nbc\ndefghi\njklm\nnopqrst\nuvwx\nyz";
+    String text1 = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+    String text2 = "中华人民共和国";
+    TextPaint textPaint = new TextPaint();
+    textPaint.setColor(Color.BLACK);
+    textPaint.setStyle(Style.FILL);
+    textPaint.setAntiAlias(true);
+    textPaint.setTextSize(25);
+    StaticLayout staticLayout =
+        new StaticLayout(text2, textPaint, mWidth / 2, Alignment.ALIGN_NORMAL, 1, 0, true);
+    staticLayout.draw(canvas);
+  }
 
-    /** moveTo setLastPoint lineTo close */
+  /** path 路径 使用 Path 不仅能够绘制简单图形，也可以绘制比较复杂的图形; 根据路径绘制文本和剪裁画布都会用到 Path */
+  private void drawPathBase(Canvas canvas) {
     // lineTo 上次操作结束的点到目标点的连线，如果没有进行过操作则默认点为坐标原点
     // moveTo 改变下次操作的起点
     // setLastPoint 重置上一次操作的最后一个点，与 moveTo 不同的是，会影响上一次点的坐标
-    // close 连接当前最后一个点和最初的点，如果连接了无法形成封闭图形，则 close 什么也不做
-    //    canvas.translate(mWidth / 2, mHeight / 2);
-    //    Path path = new Path();
-    //    // path.lineTo(100, 200);
-    //    path.lineTo(200, 200);
-    //    // path.moveTo(200, 100);
-    //    // path.setLastPoint(200, 100);
-    //    path.lineTo(200, 0);
-    //    path.close();
-    //    canvas.drawPath(path, mPaint);
-    /** addXxx Direction.CW 顺时针 Direction.CCW 逆时针 */
-    //    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
-    //    Path path = new Path();
-    //    path.addRect(-200, -200, 300, 200, Direction.CCW);
-    //    canvas.drawPath(path, mPaint);
+    // close 连接当前最后一个点和最初的点，如果连接了无法形成封闭图形，则 close 什么也不做; mPaint setStyle 为填充模式时可能也会起到这个效果
+    // rLineTo、rMoveTo 指相对位置,相对于当前位置
+    // path.setFillType(fillType) 是用来设置图形自相交时的填充算法，与 path 绘制的方向有关系;  WINDING 是「全填充」(默认)，而 EVEN_ODD
+    // 是填充非相交的部分
+    // path 重置有 reset 和 rewind 两种模式，区别是 reset 保留 fillType 模式，但不保存原有数据；rewind 相反，一般选择 reset
+    canvas.translate(mWidth / 2, mHeight / 2);
+    Path path = new Path();
+    // path.lineTo(100, 200);
+    path.lineTo(200, 200);
+    // path.moveTo(200, 100);
+    // path.setLastPoint(200, 100);
+    path.lineTo(200, 0);
+    path.close();
+    canvas.drawPath(path, mPaint);
+  }
+
+  /**
+   * addXxx 系列(除了圆弧)
+   *
+   * <p>圆形 public void addCircle (float x, float y, float radius, Path.Direction dir)
+   *
+   * <p>椭圆 public void addOval (RectF oval, Path.Direction dir)
+   *
+   * <p>矩形 public void addRect(float left,float top, float right, float bottom, Path.Direction dir)
+   *
+   * <p>public void addRect(RectF rect,Path.Direction dir)
+   *
+   * <p>Direction.CW 顺时针 Direction.CCW 逆时针
+   */
+  private void drawPathAddXXX(Canvas canvas) {
+    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
+    Path path = new Path();
+    path.addRect(-200, -200, 300, 200, Direction.CCW);
+    canvas.drawPath(path, mPaint);
+
     /** 单纯使用 Direction.CW/CCW 看不出区别，需要配合 setLastPoint 才能看出明显区别 */
-    //    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
-    //    Path path = new Path();
-    //    path.addRect(-200, -200, 200, 200, Path.Direction.CCW);
-    //    path.setLastPoint(-300, 300); // <-- 重置最后一个点的位置
-    //    canvas.drawPath(path, mPaint);
-    /**
-     * public void addPath (Path src);
-     *
-     * <p>public void addPath (Path src, float dx, float dy); 将 src 进行了位移之后再添加进当前 path 中
-     *
-     * <p>public void addPath (Path src, Matrix matrix); 将 src 添加到当前 path 之前先使用 Matrix 进行变换
-     */
-    canvas.translate(0, mHeight / 2);
+    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
     Path path2 = new Path();
+    path.addRect(-200, -200, 200, 200, Path.Direction.CCW);
+    path.setLastPoint(-300, 300); // <-- 重置最后一个点的位置
+    canvas.drawPath(path2, mPaint);
+  }
+
+  /**
+   * addPath
+   *
+   * <p>public void addPath (Path src);
+   *
+   * <p>public void addPath (Path src, float dx, float dy); 将 src 进行了位移之后再添加进当前 path 中
+   *
+   * <p>public void addPath (Path src, Matrix matrix); 将 src 添加到当前 path 之前先使用 Matrix 进行变换
+   */
+  private void drawPathAddPath(Canvas canvas) {
+    canvas.translate(0, mHeight / 2);
+    Path path = new Path();
     Path src = new Path();
-    path2.addCircle(0, 0, 100, Path.Direction.CW);
+    path.addCircle(0, 0, 100, Path.Direction.CW);
     src.addCircle(0, 0, 100, Path.Direction.CW);
     for (int i = 0; i < 10; i++) {
-      path2.addPath(src, 200 * (i + 1), 0);
-      canvas.drawPath(path2, mPaint);
+      path.addPath(src, 200 * (i + 1), 0);
+      canvas.drawPath(path, mPaint);
     }
-    /**
-     * addArc arcTo 绘制圆弧
-     *
-     * <p>public void addArc (RectF oval, float startAngle, float sweepAngle)
-     *
-     * <p>public void arcTo(RectF oval, float startAngle, float sweepAngle)
-     *
-     * <p>public void arcTo(RectF oval, float startAngle, float sweepAngle, boolean forceMoveTo)
-     * forceMoveTo true(默认) -> 将最后一个点移动到圆弧起点，即不连接最后一个点与圆弧起点; false -> 不移动，而是连接最后一个点与圆弧起点
-     */
+  }
 
-    /** 其它 api */
-    //    path.isEmpty(); // path 是否为空
-    //    path.isRect(new RectF()); // 当前 path 是否是一个矩形
-    //    path.set(new Path()); // 将新的 path 赋值给当前 path
-    //    path.offset(300, 0); // 平移 path
+  /**
+   * addArc arcTo 绘制圆弧
+   *
+   * <p>public void addArc (RectF oval, float startAngle, float sweepAngle)
+   *
+   * <p>public void arcTo(RectF oval, float startAngle, float sweepAngle)
+   *
+   * <p>public void arcTo(RectF oval, float startAngle, float sweepAngle, boolean forceMoveTo)
+   *
+   * <p>是否使用 moveTo 将变量移动到圆弧的起点位移
+   *
+   * <p>forceMoveTo true(默认) -> 将最后一个点移动到圆弧起点，即不连接最后一个点与圆弧起点; false -> 不移动，而是连接最后一个点与圆弧起点
+   */
+  private void drawPathAddArc(Canvas canvas) {
+    // 例子一
+    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
+    // canvas.scale(1, -1); // <-- 注意 翻转y坐标轴
 
-    // offset (float dx, float dy, Path dst) 将当前 path 平移后的状态存入 dst 中，不会影响当前 path
-    //    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
-    //    Path path = new Path(); // path 中添加一个圆形(圆心在坐标原点)
-    //    path.addCircle(0, 0, 100, Path.Direction.CW);
-    //    Path dst = new Path(); // dst 中添加一个矩形
-    //    dst.addRect(-200, -200, 200, 200, Path.Direction.CW);
-    //    path.offset(300, 0, dst); // 平移
-    //    canvas.drawPath(path, mPaint); // 绘制 path
-    //    mPaint.setColor(Color.BLUE); // 更改画笔颜色
-    //    canvas.drawPath(dst, mPaint); // 绘制dst
-    // 会发现 dst 绘制出来不是矩形，而是 offset 位移后的圆，说明 dst 有内容时，会清空 dst 并存入当前 path
+    Path path = new Path();
+    path.lineTo(100, 100);
+
+    RectF oval = new RectF(0, 0, 300, 300);
+    canvas.drawRect(oval, mPaint);
+    // path.addArc(oval, 0, 90); //默认是 true 的 addArc
+    path.arcTo(oval, 0, 90, true); // <-- 和上面一句作用等价
+    canvas.drawPath(path, mPaint);
+
+    // 例子二
+    canvas.translate(mWidth / 2, mHeight / 2); // 移动坐标系到屏幕中心
+    canvas.scale(1, -1); // <-- 注意 翻转y坐标轴
+
+    Path path2 = new Path();
+    path.lineTo(100, 100);
+
+    RectF oval2 = new RectF(0, 0, 300, 300);
+    path.arcTo(oval2, 0, 270);
+    // path.arcTo(oval,0,270,false);
+    canvas.drawPath(path2, mPaint);
+  }
+
+  /** 其它 api */
+  private void drawPathOtherApi() {
+    Path path = new Path();
+    path.isEmpty(); // path 是否为空
+
+    path.lineTo(0, 400);
+    path.lineTo(400, 400);
+    path.lineTo(400, 0);
+    path.lineTo(0, 0);
+    RectF rect = new RectF();
+    path.isRect(rect); // 当前 path 是否是一个矩形，如果 path 是一个矩形的话，会将矩形的信息存放进参数 rect 中
+
+    path.set(new Path()); // 将新的 path 赋值给当前 path
+    path.offset(300, 0); // 平移 path
+    // path.offset (float dx, float dy, Path dst) 将当前 path 平移后的状态存入 dst 中，不会影响当前 path
+  }
+
+  /** offset 测试 */
+  private void drawPathOffset(Canvas canvas) {
+    canvas.translate(mWidth / 2, mHeight / 2);
+    Path path = new Path(); // path 中添加一个圆形(圆心在坐标原点)
+    path.addCircle(0, 0, 100, Path.Direction.CW);
+
+    Path dst = new Path(); // dst 中添加一个矩形
+    dst.addRect(-200, -200, 200, 200, Path.Direction.CW);
+
+    path.offset(300, 0, dst); // 平移
+    canvas.drawPath(path, mPaint); // 绘制 path
+
+    mPaint.setColor(Color.BLUE); // 更改画笔颜色
+    canvas.drawPath(dst, mPaint); // 绘制 dst
+    // 会发现 dst 绘制出来不是矩形,而是 offset 位移后的圆; 说明 dst 有内容时，会清空 dst 原有内容并存入当前 path 的内容
+  }
+
+  /**
+   * 范围裁剪
+   *
+   * <p>clipRect() 裁剪一个矩形范围
+   *
+   * <p>clipPath() 裁剪任意形状
+   */
+  private void clipPath(Canvas canvas) {
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
+    //    canvas.clipRect(0, 0, getWidth() / 2 / 2, getHeight() / 2 / 2);
+    //    canvas.drawBitmap(bitmap, 0, 0, mPaint);
+
+    Path path = new Path();
+    path.addCircle(getWidth() / 2, getHeight() / 2, 500, Path.Direction.CW);
+    canvas.clipPath(path);
+    canvas.drawBitmap(bitmap, 0, 0, mPaint);
+  }
+
+  /**
+   * 布尔运算：用一些简单的图形通过一些规则合成一些相对比较复杂，或难以直接得到的图形
+   *
+   * <p>DIFFERENCE：Path1 中减去 Path2 后剩下的部分
+   *
+   * <p>INTERSECT：Path1 与 Path2 相交的部分
+   *
+   * <p>UNION：包含全部 Path1 和 Path2 全部
+   *
+   * <p>XOR：包含 Path1 与 Path2 但不包括两者相交的部分
+   */
+  private void booleanCompute(Canvas canvas) {
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+
+    Path path1 = new Path();
+    Path path2 = new Path();
+    Path path3 = new Path();
+    Path path4 = new Path();
+
+    path1.addCircle(0, 0, 200, Path.Direction.CW);
+    path2.addRect(0, -200, 200, 200, Path.Direction.CW);
+    path3.addCircle(0, -100, 100, Path.Direction.CW);
+    path4.addCircle(0, 100, 100, Path.Direction.CCW);
+
+    path1.op(path2, Path.Op.DIFFERENCE);
+    path1.op(path3, Path.Op.UNION);
+    path1.op(path4, Path.Op.DIFFERENCE);
+
+    canvas.drawPath(path1, mPaint);
   }
 }
