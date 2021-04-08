@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import com.owl.android_simple.R;
 import com.owl.android_simple.data.PieData;
+import com.owl.android_simple.view.CanvasView;
 import com.owl.android_simple.view.PieView;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,8 @@ public class CustomViewTestActivity extends AppCompatActivity {
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.custom_main_test);
+    CanvasView canvasView = findViewById(R.id.canvas_view);
+    findViewById(R.id.button).setOnClickListener(v -> canvasView.doCamera());
   }
 
   // 绘制饼状图

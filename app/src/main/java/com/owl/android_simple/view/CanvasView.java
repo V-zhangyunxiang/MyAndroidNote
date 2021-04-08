@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.BlurMaskFilter;
 import android.graphics.BlurMaskFilter.Blur;
+import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.CornerPathEffect;
@@ -46,6 +47,8 @@ import java.util.Locale;
  * @author zhangyunxiang Date 2021/1/28 14:56
  */
 public class CanvasView extends View {
+
+  private static final String TAG = "zyx";
   // 创建 Paint 对象的时候，构造方法的参数里加一个 ANTI_ALIAS_FLAG 的 flag，就可以在初始化的时候就开启抗锯齿
   Paint mPaint = new Paint();
   Picture mPicture = new Picture();
@@ -378,7 +381,7 @@ public class CanvasView extends View {
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    booleanCompute(canvas);
+    camera(canvas);
   }
 
   // 绘制子 View
@@ -898,5 +901,122 @@ public class CanvasView extends View {
     path1.op(path4, Path.Op.DIFFERENCE);
 
     canvas.drawPath(path1, mPaint);
+  }
+
+  // matrix 矩阵 ：使用 Matrix 来做常见变换
+  // 创建 Matrix 对象 - 调用 Matrix 的 pre/postTranslate/Rotate/Scale/Skew() 方法来设置几何变换 - 使用
+  // Canvas.setMatrix(matrix) 或 Canvas.concat(matrix) 来把几何变换应用到 Canvas
+  private void matrixBase() {
+    /*
+     什么是矩阵？
+      一个由 m 行 n 列元素排列成的矩形阵列。矩阵里的元素可以是数字、符号或数学式
+    矩阵的加减乘操作？
+      1. 大小相同（行数列数都相同）的矩阵之间可以相互加减的，具体是对每个位置上的元素做加减法
+      2. 数乘是所有位置都乘以这个数
+      3. 矩阵相乘是第一个矩阵第 m 行与第二个矩阵第 n 列，对应位置的每个值的乘积之和
+    为什么相乘是这样的规则？
+      矩阵的本质就是线性方程式，两者是一一对应关系，方程组的简化记法
+    matrix 为什么是 3*3 的矩阵
+      平移是矩阵相加，旋转和缩放则是矩阵相乘，引入齐次坐标，将平移的加法合并用乘法表示，统一计算方式，方便计算和降低运算量
+    什么是齐次坐标
+      n 维的向量用一个 n+1 维向量来表示
+    matrix 矩阵中元素的作用
+     MTRANS_X、MTRANS_Y 同时控制着 Translate
+     MSCALE_X、MSCALE_Y 同时控制着 Scale
+     MSCALE_X、MSKEW_X、MSCALE_Y、MSKEW_Y 同时控制着 Rotate
+     MSKEW_X、MSKEW_Y 同时控制着 Skew
+    set、pre、post 的区别
+     分别代表设置、前乘、后乘变换；混合使用时 pre 先执行、post 后执行，建议是只使用一种乘法
+    */
+    Matrix matrix = new Matrix(); // 创建一个单位矩阵
+    matrix.equals(new Matrix());
+    matrix.hashCode();
+    matrix.toString(); // 将 Matrix 转换为字符串
+    matrix.toShortString(); // 将 Matrix 转换为短字符串
+    matrix.set(new Matrix()); // 将参数 Matrix 的数值复制到当前 Matrix 中
+    matrix.reset(); // 重置当前 Matrix(将当前 Matrix 重置为单位矩阵)
+    matrix.setValues(new float[] {}); // 参数是浮点型的一维数组，长度需要大于 9，拷贝数组中的前 9 位数值赋值给当前 Matrix
+    matrix.getValues(new float[] {}); // 将 Matrix 中的数值拷贝进参数的前 9 位中
+    // map 系列用于数值计算，返回变换后的数值
+    // 初始数据为 3 个点 (0, 0) (80, 100) (400, 300)
+    float[] pts = new float[] {0, 0, 80, 100, 400, 300};
+    matrix.setScale(0.5f, 1f);
+    matrix.mapPoints(pts); // 数组作为参数传递原始数值，计算结果仍存放在 pts 数组中
+
+    float[] dst = new float[6];
+    matrix.mapPoints(dst, pts); // pts 作为参数传递原始数值，计算结果存放在 dst 中，pts 不变; 原始数据需要保留则一般使用这种方法
+    // 最后一个 2 表示两个点，即四个数值,并非两个数值
+    matrix.mapPoints(dst, 0, pts, 2, 2);
+
+    float radius = 100;
+    matrix.mapRadius(radius);
+    matrix.setScale(0.5f, 1f);
+    Log.i(TAG, "mapRadius: " + radius); // 测量半径,由于圆可能会因为画布变换变成椭圆，所以此处测量的是平均半径
+  }
+
+  /** setPolyToPoly 自定义变换 */
+  private void customMatrixPoly(Canvas canvas) {
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
+
+    Matrix polyMatrix = new Matrix();
+
+    float[] src = {
+      0,
+      0, // 左上
+      bitmap.getWidth(),
+      0, // 右上
+      bitmap.getWidth(),
+      bitmap.getHeight(), // 右下
+      0,
+      bitmap.getHeight()
+    }; // 左下
+
+    float[] dst = {
+      0,
+      0, // 左上
+      bitmap.getWidth(),
+      400, // 右上
+      bitmap.getWidth(),
+      bitmap.getHeight() - 200, // 右下
+      0,
+      bitmap.getHeight()
+    }; // 左下
+
+    // 核心要点
+    // src 原始数组，srcIndex 原始数组开始位置，dst 目标数组，dstIndex 目标数组开始位置，pointCount 测控点的数量(范围 0-4)
+    // 随着 pointCount 数值增大 setPolyToPoly 的可以操作性也越来越强,大部分情况为 4; 0 - 3 有其它方法替代，只有为 4 时，可以任意形变，无其它方法替代
+    // 如果这个 Matrix 赋值给了 Canvas，它的作用范围就是整个画布;如果赋值给了 Bitmap，它的作用范围就是整张图片
+    // canvas.concat(new Matrix());
+    // canvas.setMatrix(new Matrix());
+    polyMatrix.setPolyToPoly(src, 0, dst, 0, src.length >> 1); // src.length >> 1 为位移运算 相当于处以 2
+
+    // 此处为了更好的显示对图片进行了等比缩放和平移(图片本身有点大)
+    polyMatrix.postScale(0.26f, 0.26f);
+    polyMatrix.postTranslate(0, 200);
+
+    canvas.drawBitmap(bitmap, polyMatrix, mPaint);
+  }
+
+  /**
+   * 使用 Camera 来做三维变换
+   *
+   * <p>Camera 的三维变换有三类：旋转、平移、移动相机(不常用)
+   */
+  private void camera(Canvas canvas) {
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
+    canvas.save();
+    Matrix matrix = new Matrix();
+    matrix.postScale(0.5f, 0.5f);
+    Camera camera = new Camera();
+    camera.save();
+    camera.rotateY(30);
+    camera.applyToCanvas(canvas); // 把旋转投影到 Canvas
+    camera.restore();
+    canvas.drawBitmap(bitmap, matrix, mPaint);
+    canvas.restore();
+  }
+
+  public void doCamera() {
+    invalidate();
   }
 }
