@@ -926,7 +926,7 @@ public class CanvasView extends View {
      MSCALE_X、MSKEW_X、MSCALE_Y、MSKEW_Y 同时控制着 Rotate
      MSKEW_X、MSKEW_Y 同时控制着 Skew
     set、pre、post 的区别
-     分别代表设置、前乘、后乘变换；混合使用时 pre 先执行、post 后执行，建议是只使用一种乘法
+     分别代表设置、前乘、后乘变换；set 先清空前面的再设置；混合使用时 pre 先于 set 执行、post 后于 set 执行，建议是只使用一种乘法
     */
     Matrix matrix = new Matrix(); // 创建一个单位矩阵
     matrix.equals(new Matrix());
@@ -993,7 +993,6 @@ public class CanvasView extends View {
     // 此处为了更好的显示对图片进行了等比缩放和平移(图片本身有点大)
     polyMatrix.postScale(0.26f, 0.26f);
     polyMatrix.postTranslate(0, 200);
-
     canvas.drawBitmap(bitmap, polyMatrix, mPaint);
   }
 
@@ -1001,19 +1000,25 @@ public class CanvasView extends View {
    * 使用 Camera 来做三维变换
    *
    * <p>Camera 的三维变换有三类：旋转、平移、移动相机(不常用)
+   *
+   * <p>3D 坐标系是左手坐标系，原点默认左上角，X 轴右，Y 轴上，Z 轴垂直屏幕内
+   *
+   * <p>摄像机默认是透视投影，近大远小，在屏幕左上角
+   *
+   * <p>3D 坐标系如何设置旋转中心？
    */
   private void camera(Canvas canvas) {
+    canvas.translate(getWidth() / 2, getHeight() / 2);
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
-    canvas.save();
     Matrix matrix = new Matrix();
-    matrix.postScale(0.5f, 0.5f);
     Camera camera = new Camera();
     camera.save();
-    camera.rotateY(30);
-    camera.applyToCanvas(canvas); // 把旋转投影到 Canvas
+    camera.rotateY(60);
+    camera.getMatrix(matrix);
     camera.restore();
+    matrix.preTranslate(-bitmap.getWidth() / 2, -bitmap.getHeight() / 2);
+    matrix.preScale(0.5f, 0.5f);
     canvas.drawBitmap(bitmap, matrix, mPaint);
-    canvas.restore();
   }
 
   public void doCamera() {
