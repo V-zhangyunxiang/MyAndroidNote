@@ -7,7 +7,7 @@ package com.owl.kotlin.code
  */
 
 /**
- *   kotlin                     java
+ *  kotlin                     java
  *  List<T>
  *  MutableList<T>
  *

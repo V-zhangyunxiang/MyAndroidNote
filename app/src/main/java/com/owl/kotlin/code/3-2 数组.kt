@@ -13,16 +13,6 @@ package com.owl.kotlin.code
  *
  */
 
-//  test2(10, (i) -> { i > 5 })
-
-// void test2(int i，Fun1<Integer, Boolean> test) {
-//      if (test.call(i)) {
-//          Log.e("xxx", "show")
-//      } else {
-//          Log.e("xxx", "hide")
-//      }
-// }
-
 fun test2(i: Int, test: (Int) -> Boolean) {
     if (test.invoke(i)) {
         println("show")
@@ -37,19 +27,18 @@ fun main() {
     val c0 = intArrayOf(1, 2, 3, 4, 5) // doubleArrayOf() 等等
     val c1 = IntArray(5) { it + 1 }   // BooleanArray 等等  it 指代每个元素本身
     // {} 表示数组下标 index 索引值，从第一个数组元素开始，依次为每个数组元素调用函数[init]。它应返回给定索引的数组元素的值。
-    c1[0] = 2               //赋值
+    c0[0] = 2               //写
+    val s = c0[0]           //读
     println(c1)             //数组对象的 hash 值
     println(c1.toString())  //数组对象的 hash 值 ，这点与 Java 不同
     println(c1.contentToString()) //真正的输出数组元素
     println(c1.size)  //数组的长度, Java 是 length
 
-    BooleanArray(6) { false }
     val booleanArray = BooleanArray(6) { i -> i > 3 }
     println("booleanArray[]= ${booleanArray.contentToString()}")
 
-    val s = Array(6) { i -> i }
-    s[0] = 3
-    println("s[]= ${s.contentToString()}")
+    val booleanArray2 = booleanArrayOf(false, true)
+    println("booleanArray2[]= ${booleanArray2.contentToString()}")
 
     // lambda 的调用stringList[0]
     test2(10) { j -> j > 3 }
@@ -61,17 +50,12 @@ fun main() {
     val e = floatArrayOf(1f, 2f, 3f, 4f)
     //传统遍历
     for (ele in e) {
-        println(ele)
+        print("$ele ")
     }
     //forEach 遍历,ele 默认是 it，就可以直接把 ele-> 去掉
     e.forEach { ele -> println(ele) }
-
     //获取当前的遍历的 index 怎么办？
-    for (i in 0 until c0.size) {
-        print(c0[i])
-    }
-
-    for (i in c0.indices) {
-        print(c0[i])
+    for (i in e.indices) {
+        print(e[i])
     }
 }
