@@ -34,14 +34,14 @@ fun main() {
     val a3 = 123456789L  //正确
 
     /**
-     * 数值类型转换
+     * kotlin 数值类型转换  toXXX()
      * java 隐式转换
      *     int e = 10;
      *     long f = e;
      */
     val a4 = 2
-    //val a5: Long = a4   //错误，kotlin 不允许隐式转换
     val a6: Long = a4.toLong() //正确
+    //val a5: Long = a4   //错误，kotlin 不允许隐式转换
     val a7: Float = 1f    // float 后面必须带 f(同Java)
     val a8: Double = 2.1  //必须带小数点
 

@@ -8,9 +8,6 @@ package com.owl.java;
 public class TestJava {
 
   public static void main(String[] args) {
-    //    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
-    //    Date d2 = new Date();
-    //    System.out.println(sdf.format(d2));
     AA aa = new AA();
     aa.printF();
   }

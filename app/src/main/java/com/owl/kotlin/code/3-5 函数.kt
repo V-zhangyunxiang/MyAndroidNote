@@ -23,13 +23,22 @@ fun main(args: Array<String>): Unit {
  * */
 
 //函数的类型
+//函数的引用(非常重要，函数引用可以作为参数传递使用)
 fun foo() {}
+
 // () -> Unit
+val g1: () -> Unit = ::foo
+
+
+//(Int) -> String
+val g2: (Int) -> String = ::foo
 
 fun foo(p: Int): String {
     return ""
+
 }
-//(Int) -> String
+
+val s33: (Foo, String, Int) -> Any = Foo::foo
 
 class Foo {
     fun foo(p: String, s: Int): String {
@@ -40,11 +49,6 @@ class Foo {
 //val s2: (Foo, String, Int) -> Any = Foo::foo
 //val s3 = Function3<Foo, T, T, R> = Foo::foo
 }
-
-//函数的引用(非常重要，函数引用可以作为参数传递使用)
-val g1: () -> Unit = ::foo
-val g2: (Int) -> String = ::foo
-val s33: (Foo, String, Int) -> Any = Foo::foo
 
 //此时是用对象 :: foo 方法，前面就不用带上 receiver 了
 val foo = Foo()
