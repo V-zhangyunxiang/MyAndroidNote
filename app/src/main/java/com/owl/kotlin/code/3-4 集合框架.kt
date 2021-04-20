@@ -57,6 +57,4 @@ fun main() {
     val tThird = triple.third
     //解构申明，把 triple 拆开，相当于定义了一个 e，一个 f，一个 g
     val (e, f, g) = triple
-
-
 }

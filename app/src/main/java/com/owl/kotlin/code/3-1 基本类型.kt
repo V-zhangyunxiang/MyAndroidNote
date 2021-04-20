@@ -16,7 +16,7 @@ package com.owl.kotlin.code
  */
 fun main() {
     /**
-     *  val 只读变量 = final, 指的是当前对象不可变，对象内的元素是可变的(重要)
+     *  val 只读变量 = final, 指的是当前对象不可变，对象内的元素是可变的(重要),不代表是常量
      *  var 可读写变量
      */
     val a: String = "hello word"

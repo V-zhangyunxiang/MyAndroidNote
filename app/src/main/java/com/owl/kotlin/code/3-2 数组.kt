@@ -34,7 +34,7 @@ fun main() {
     println(c1.contentToString()) //真正的输出数组元素
     println(c1.size)  //数组的长度, Java 是 length
 
-    val booleanArray = BooleanArray(6) { i -> i > 3 }
+    val booleanArray = BooleanArray(6) { it > 3 }
     println("booleanArray[]= ${booleanArray.contentToString()}")
 
     val booleanArray2 = booleanArrayOf(false, true)
@@ -53,7 +53,7 @@ fun main() {
         print("$ele ")
     }
     //forEach 遍历,ele 默认是 it，就可以直接把 ele-> 去掉
-    e.forEach { ele -> println(ele) }
+    e.forEach { it -> println(it) }
     //获取当前的遍历的 index 怎么办？
     for (i in e.indices) {
         print(e[i])
