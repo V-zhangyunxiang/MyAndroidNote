@@ -1,12 +1,6 @@
 package com.owl.kotlin.code
 
 /**
- *  Description
- *  @author zhangyunxiang
- *  Date 2020/11/24 20:28
- */
-
-/**
  *  int[]  -    IntArray      小写
  *  Integer[] - Array<Int>    装箱
  *  person[]  - Array<Person> 自定义类型
@@ -14,7 +8,7 @@ package com.owl.kotlin.code
  */
 
 fun test2(i: Int, test: (Int) -> Boolean) {
-    if (test.invoke(i)) {
+    if (test(i)) {
         println("show")
     } else {
         println("hide")
@@ -24,9 +18,8 @@ fun test2(i: Int, test: (Int) -> Boolean) {
 fun main() {
     //数组的创建
     val d = arrayOf("hello", "world")
-    val c0 = intArrayOf(1, 2, 3, 4, 5) // doubleArrayOf() 等等
-    val c1 = IntArray(5) { it + 1 }   // BooleanArray 等等  it 指代每个元素本身
-    // {} 表示数组下标 index 索引值，从第一个数组元素开始，依次为每个数组元素调用函数[init]。它应返回给定索引的数组元素的值。
+    val c0 = intArrayOf(1, 2, 3, 4, 5)
+    val c1 = IntArray(5) { it }  // it 表示数组下标,从第一个数组元素开始,依次为每个数组元素调用函数[init],返回给定索引的数组元素的值
     c0[0] = 2               //写
     val s = c0[0]           //读
     println(c1)             //数组对象的 hash 值
@@ -34,7 +27,7 @@ fun main() {
     println(c1.contentToString()) //真正的输出数组元素
     println(c1.size)  //数组的长度, Java 是 length
 
-    val booleanArray = BooleanArray(6) { it > 3 }
+    val booleanArray = BooleanArray(2)
     println("booleanArray[]= ${booleanArray.contentToString()}")
 
     val booleanArray2 = booleanArrayOf(false, true)

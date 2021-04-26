@@ -1,12 +1,6 @@
 package com.owl.kotlin.code
 
 /**
- *  Description
- *  @author zhangyunxiang
- *  Date 2020/11/25 16:16
- */
-
-/**
  *  kotlin                     java
  *  List<T>
  *  MutableList<T>
@@ -26,19 +20,42 @@ fun main() {
     val map = mapOf("name" to "zyx", "age" to 23)    // to = K-V
     val map2 = mutableMapOf("name" to "zyx", "age" to 23)
 
-    //集合的创建
+    // list
     val stringList = ArrayList<String>()
-    for (i in 1..10) {
-        stringList += "num: $i"
-        stringList -= "num: $i"
-    }
     //读写
-    stringList[0] = "222"
-    val value = stringList[0]
+    //stringList[0] = "222"
+    //val value = stringList[0]
 
-    val m1 = HashMap<String, Int>()
-    m1["1"] = 2
-    println(m1["1"])
+    // add
+    for (i in 1..4) {
+        stringList.add(i.toString())
+    }
+
+    //链表遍历
+    for (i in stringList) {
+        println(i)
+    }
+    for ((index, value) in stringList.withIndex()) {
+        println("index= $index value= $value")
+    }
+    for (i in stringList.indices) {
+        println(stringList[i])
+    }
+
+    //map
+    val m1 = HashMap<String, String>()
+    //add
+    for (i in 1..10) {
+        m1["key = $i"] = "value = $i"
+    }
+
+    //集合遍历
+    for ((key, value) in m1) {
+        println("index= $key value= $value")
+    }
+    for (entry in m1.entries) {
+        println("key=${entry.key}  value=${entry.value}")
+    }
 
     //pair
     //两种创建方式
@@ -57,4 +74,13 @@ fun main() {
     val tThird = triple.third
     //解构申明，把 triple 拆开，相当于定义了一个 e，一个 f，一个 g
     val (e, f, g) = triple
+
+    //集合和数组互转
+
+    //声明一个数组
+    val array1 = arrayListOf("str1", "str2", "str3")
+    //将数组转化为集合
+    val list1 = array1.toList()
+    //将集合转化为数组
+    val array2 = list1.toTypedArray()
 }

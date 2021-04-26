@@ -1,17 +1,12 @@
 package com.owl.kotlin.code
 
 /**
- *  Description
- *  @author zhangyunxiang
- *  Date 2021/4/19 18:05
- */
-/*
-* 左边或者右边至少有一个表示类型
-* Lambda 表达式是函数调用的最后一个实参,它可以放在括号的外面
-* Lambda 表达式是函数的唯一实参,可以去掉空的圆括号对
-* Lambda 表达式中参数的类型可以被推导出来,那么类型声明可以被省略
-*
-* */
+ * 左边或者右边至少有一个表示类型
+ * Lambda 表达式是函数调用的最后一个实参,它可以放在括号的外面
+ * Lambda 表达式是函数的唯一实参,可以去掉空的圆括号对
+ * Lambda 表达式中参数的类型可以被推导出来,那么类型声明可以被省略
+ *
+ * */
 val lambda: () -> Unit = {
     println("Hello")
 }
