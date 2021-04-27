@@ -219,6 +219,11 @@ public class CanvasView extends View {
     canvas.drawBitmap(bitmap, 100, 100, mPaint);
   }
 
+  /**
+   * shader
+   *
+   * @param canvas
+   */
   public void drawBitmapShader(Canvas canvas) {
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
     Shader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);

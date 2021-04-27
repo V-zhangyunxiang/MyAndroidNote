@@ -24,7 +24,7 @@ package com.owl.kotlin.code
  * 3.非顶层函数引用(也就是在某个类中的方法)需要带上 receiver,属性同理
  * */
 fun main(args: Array<String>) {
-    yy(s33)
+    yy(g3)
     println(args.contentToString())
     /*
       具名参数
@@ -52,7 +52,7 @@ fun foo(p: Int): String {
 
 }
 
-val s33: (Foo, String, Int) -> Any = Foo::foo
+val g3: (Foo, String, Int) -> Any = Foo::foo
 
 class Foo {
     fun foo(p: String, s: Int): String {
@@ -66,11 +66,10 @@ class Foo {
 
 //此时是用对象 :: foo 方法
 val foo = Foo()
-val z: (String, Int) -> Any = foo::foo
+val g4: (String, Int) -> Any = foo::foo
 
 fun yy(p: (Foo, String, Int) -> Any) {
     val s = p(Foo(), "2", 2)
-    //val s = p.invoke(Foo(), "2", 2)
     println(s)
 }
 

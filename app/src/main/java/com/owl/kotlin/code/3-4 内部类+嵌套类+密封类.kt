@@ -59,6 +59,11 @@ fun check(sealedClass: SealedClass): String =
         }
 
 fun main() {
+    val nestedClass = OutClass.NestedClass()
+
+    val outClass = OutClass()
+    val innerClass = outClass.InnerClass()
+
     val sealedClass1 = SealedClass.SonClass1()
     val sealedClass2 = SealedClass.SonClass2
     val sealedClass3 = SonClass3()

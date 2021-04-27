@@ -3,7 +3,7 @@ package com.owl.kotlin.code
 import android.view.View
 
 /**
- *  enum+class 来申明枚举类
+ *  enum + class 来申明枚举类
  *  类属性直接作为类的参数列表
  *  常量格式与枚举类声明的格式需一致
  *  常量和方法用 ; 分割

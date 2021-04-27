@@ -107,7 +107,7 @@ fun main() {
     println(simpleClass.y)
     println(simpleClass.z)
 
-    //属性引用 - 跟函数引用相似 - 类引用同理
+    //属性引用 - 函数引用相似 - 类引用(构造函数)
 
     //通过类名引用，set/get 需要传递 receiver
     val property1: KMutableProperty1<SimpleClass, Int> = SimpleClass::s

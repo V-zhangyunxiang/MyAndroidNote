@@ -28,6 +28,7 @@ package com.owl.kotlin.code
  *
  *  lazy 委托, 默认线程安全
  *    只在 View 首次被访问时执行初始化代码
+ *    只能修饰 val
  *
  * 为可空类型添加扩展函数处理 Null 值
  *
