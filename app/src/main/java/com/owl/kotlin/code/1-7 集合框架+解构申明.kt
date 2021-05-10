@@ -1,7 +1,7 @@
 package com.owl.kotlin.code
 
 /**
- *  kotlin                     java
+ *  kotlin
  *  List<T>
  *  MutableList<T>
  *
@@ -57,6 +57,23 @@ fun main() {
         println("key=${entry.key}  value=${entry.value}")
     }
 
+    //集合和数组互转
+    //声明一个数组
+    val array1 = arrayListOf("str1", "str2", "str3")
+    //将数组转化为集合
+    val list1 = array1.toList()
+    //将集合转化为数组
+    val array2 = list1.toTypedArray()
+
+    /**
+     * 解构申明: 把一个对象赋值给多个变量
+     *
+     * data 类默认为主构造函数参数声明了 component 函数，这也是解构的原理
+     * 普通类想具备解构的功能，需要申明 operator fun component1() 函数，返回对应的变量
+     * list，map，数组默认支持解构申明
+     * 不需要某个变量时，使用 _ 下划线取代其名称
+     * lambda 也可以使用解构申明
+     */
     //pair
     //两种创建方式
     val pair = "a" to "b"
@@ -64,7 +81,7 @@ fun main() {
     //获取对应元素
     val first = pair.first
     val second = pair.second
-    //解构申明，把 pair 拆开，相当于定义了一个 x,一个 y
+    //把 pair 拆开，相当于定义了一个 x,一个 y
     val (x, y) = pair
 
     //Triple
@@ -72,15 +89,6 @@ fun main() {
     val tFirst = triple.first
     val tSecond = triple.second
     val tThird = triple.third
-    //解构申明，把 triple 拆开，相当于定义了一个 e，一个 f，一个 g
+    //把 triple 拆开，相当于定义了一个 e，一个 f，一个 g
     val (e, f, g) = triple
-
-    //集合和数组互转
-
-    //声明一个数组
-    val array1 = arrayListOf("str1", "str2", "str3")
-    //将数组转化为集合
-    val list1 = array1.toList()
-    //将集合转化为数组
-    val array2 = list1.toTypedArray()
 }

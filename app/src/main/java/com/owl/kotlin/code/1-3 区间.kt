@@ -17,4 +17,8 @@ fun main() {
     for (i in 100 downTo 1 step 1) {
         print(i);
     }
+
+    // 半开区间：不包含 100
+    for (i in 1 until 100) {
+    }
 }

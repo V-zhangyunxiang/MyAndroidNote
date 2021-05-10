@@ -2,10 +2,12 @@ package com.owl.kotlin.code
 
 /**
  * 左边或者右边至少有一个表示类型
+ *
  * 左边函数类型: (arg1, arg2...) -> { body }
+ *
  * 右边 lambda 实体: {参数：类型 -> 函数体}
  *
- * Lambda 表达式是函数调用的最后一个实参,它可以放在括号的外面
+ * Lambda 表达式是函数调用的最后一个实参,它可以放在圆括号的外面，用大括号包裹
  * Lambda 表达式是函数的唯一实参,可以去掉空的圆括号对
  * Lambda 表达式中参数的类型可以被推导出来,那么类型声明可以被省略
  * 表达式中只有一个参数，并且这个参数的类型可以被推断出来，可用 it 代替该参数(不建议)
@@ -30,7 +32,7 @@ val f3: (Int) -> Unit = {
     println(it)
 }
 
-fun testLambda(s: (Int) -> Int) = s(2)
+fun testLambda(s: (Int) -> Int): Int = s(2)
 
 fun main() {
     val zz = testLambda { it + 1 }
