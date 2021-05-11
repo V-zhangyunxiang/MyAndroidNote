@@ -11,7 +11,6 @@ package com.owl.kotlin.code
  */
 fun main() {
     val s = 2
-    //系统自带重载
     val sss = ""
     sss.toByteArray()
     2 + 3
@@ -38,9 +37,17 @@ class Point() {
 }
 
 // 中缀表达式
-// 类名(receiver) + 一个参数 + infix 关键字组成
+// 成员函数/扩展函数 + 只有一个参数 + infix 关键字组成
+// 参数不能是可变参数，且不可有默认值
 infix fun String.rotate(o: Int) {
 
+}
+
+// this rotate 3
+class Rotate {
+    infix fun rotate(o: Int) {
+
+    }
 }
 
 

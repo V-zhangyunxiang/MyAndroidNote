@@ -35,6 +35,7 @@ fun main(args: Array<String>) {
     */
 
     defaultParam("2", age = 25, name = "jack")
+    vararg(*array)
 }
 
 //函数的引用(非常重要，函数引用可以作为参数传递使用)
@@ -73,7 +74,9 @@ fun yy(p: (Foo, String, Int) -> Any) {
     println(s)
 }
 
-//变长参数
+//变长参数，通常是最后一个参数，如果要将一个数组传递给可变参数，使用 * 操作符
+val array = intArrayOf(1, 2, 3)
+
 fun vararg(vararg args: Int) {
     println(args.contentToString())
 }
