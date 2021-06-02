@@ -1,0 +1,16 @@
+//apply plugin: MyPlugin
+
+ext {
+    verson = '1.0'
+    url = 'http://baidu.com'
+}
+
+//class MyPlugin implements Plugin<Project> {
+//    @Override
+//    void apply(Project project) {
+//        println "project 是 = ${project.getProject()}"
+//        println "rootProject 是 = ${project.getRootProject()}"
+//        println "myPlugin invoked!"
+//    }
+//
+//}

@@ -14,9 +14,9 @@ import java.io.File
  *
  * 内联函数中，当 lambda 需要做为返回值使用时，此时该对象不能返回，可使用 noinline 局部关闭其优化
  *
- * 内联函数中的 lambda 可以直接 return, 会返回到最外层的调用
- *
  * lambda 不允许直接 return，可使用 return + @label 指定返回的位置
+ *
+ * 内联函数中的 lambda 可以直接 return, 会返回到最外层的调用
  *
  * 内联函数中，为了能让 lambda 间接调用，使用 crossinline 允许其被间接调用，但 lambda 就不允许直接 return 了，因为 return 会造成未知的不确定
  *

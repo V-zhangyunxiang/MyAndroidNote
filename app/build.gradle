@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply from: 'learnGradle.gradle'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -79,23 +80,6 @@ android {
 //        sourceCompatibility JavaVersion.VERSION_1_8
 //        targetCompatibility JavaVersion.VERSION_1_8
 //    }
-}
-
-
-class MyPlugin implements Plugin<Project> {
-    @Override
-    void apply(Project project) {
-        println "myPlugin invoked!"
-    }
-
-}
-
-task helloWord(group: "hello") {
-    println("Hello")
-
-    doLast {
-        println("Word")
-    }
 }
 
 dependencies {

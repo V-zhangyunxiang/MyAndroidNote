@@ -1,0 +1,88 @@
+apply from: 'other.gradle'
+apply plugin: MyPlugin
+apply plugin: 'com.learn.plugin'
+
+/**
+ * 变量
+ */
+def a = 1
+def int b = 1
+def c = "hello world"
+/**
+ *  方法
+ *  分号可省略，返回类型可省略，return 可省略(最后一行结果)，参数类型可省略，默认可见性为 public
+ */
+def add(int a, int b) {
+    println a + b
+}
+
+def minus(a, b) {
+    println a - b
+}
+
+int minus2(a, b) {
+    return a - b
+}
+
+int minus3(a, b) {
+    a - b
+}
+/**
+ *  -i  info 及更高级别
+ *  -q  quiet 及更高级别
+ *  -d  debug 及更高级别
+ *
+ *  ./gradlew -q task 查看所有 task 信息，以 group 来分组显示
+ *  ./gradlew -q 任务名称 执行某个 task
+ *
+ *  多任务调用
+ *      ./gradlew -q helloWord go
+ *  任务名称在唯一且驼峰的情况下可缩写
+ *      ./gradlew -q hW
+ */
+task helloWorld() {
+    println("Hello")
+    group = 'build'
+    description = "test"
+    doLast {
+        println("World")
+    }
+}
+
+task go(dependsOn: helloWorld) {
+    group = "custom"
+    println "go for it"
+}
+
+/**
+ * 在 Gradle 中一般有两种类型的插件，分别叫做 脚本插件 和 对象插件
+ *  对象插件 = 内部插件(apply plugin: 'java' 等) + 第三方插件(buildscript 中配置 url 和 classpath + 自定义插件)
+ */
+// 输出脚本插件内容
+task other {
+    println "版本为 ${verson}, 地址为 ${url}"
+}
+
+/**
+ * 自定义 Gradle 插件主要有三种方式，分别是 build.gradle 中编写、buildSrc 工程项目中编写、独立项目中编写
+ */
+class MyPlugin implements Plugin<Project> {
+    @Override
+    void apply(Project project) {
+        println "project 是 = ${project.getProject()}"
+        println "rootProject 是 = ${project.getRootProject()}"
+        println "myPlugin invoked!"
+    }
+}
+
+/**
+ * 除了在 build.gradle 中编写的自定义插件，还可以将插件的源代码放在 rootProjectDir(根目录)/buildSrc/src/main/groovy 目录中，Gradle 会自动识别来完成编译和测试
+ */
+
+
+
+
+
+
+
+

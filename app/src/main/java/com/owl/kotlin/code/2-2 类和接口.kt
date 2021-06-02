@@ -14,6 +14,8 @@ import kotlin.reflect.KMutableProperty1
  *    全局构造器参数: 全局可见
  *    普通构造器参数: 构造器内可见(init 快，属性初始化)
  *
+ *  多个 init 块存在时，按顺序执行
+ *
  * 工厂函数：跟类名同名的函数
  *
  * kotlin 类、方法默认不可复写，需使用 open 关键字使方法可复写、类可继承
@@ -24,7 +26,6 @@ import kotlin.reflect.KMutableProperty1
 fun SimpleClass() {
     print("我是工厂函数，不是构造函数")
 }
-
 
 open class SimpleClass(var x: Int, val y: String) : SimpleInf, SimpleInf2, AbsClass() {
     val z: String = "ss"
