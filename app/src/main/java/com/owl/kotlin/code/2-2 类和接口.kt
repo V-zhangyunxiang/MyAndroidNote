@@ -24,11 +24,11 @@ import kotlin.reflect.KMutableProperty1
  * */
 
 fun SimpleClass() {
-    print("我是工厂函数，不是构造函数")
+    println("我是工厂函数，不是构造函数")
 }
 
 open class SimpleClass(var x: Int, val y: String) : SimpleInf, SimpleInf2, AbsClass() {
-    val z: String = "ss"
+    var z: String = "ss"
 
     fun test() {
 
@@ -37,6 +37,12 @@ open class SimpleClass(var x: Int, val y: String) : SimpleInf, SimpleInf2, AbsCl
     init {
 
     }
+
+    val s2: String
+        get() {
+            return z
+        }
+
 
     //重写接口里的属性，也可通过构造函数重写
     override var s: Int = 0
@@ -104,9 +110,12 @@ fun main() {
     //不需要 new，直接使用 类名() 实例化类
     val simpleClass = SimpleClass(9, "hello")
     SimpleClass()
-    println(simpleClass.x)
-    println(simpleClass.y)
-    println(simpleClass.z)
+//    println(simpleClass.x)
+//    println(simpleClass.y)
+//    println(simpleClass.z)
+    println(simpleClass.s2)
+    simpleClass.z = "sss"
+    println(simpleClass.s2)
 
     //属性引用 - 函数引用相似 - 类引用(构造函数)
 

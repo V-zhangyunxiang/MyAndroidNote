@@ -313,6 +313,8 @@ public class CanvasView extends View {
     int resultW = widthSize;
     int resultH = heightSize;
 
+    // 注意考虑 margins 和 padding 的值
+
     if (widthMode == MeasureSpec.AT_MOST) {
       // resultW = contentW < widthSize ? contentW : widthSize;
     }
@@ -325,7 +327,32 @@ public class CanvasView extends View {
 
   @Override
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    super.onLayout(changed, left, top, right, bottom);
+    //    int topStart = getPaddingTop();
+    //    int leftStart = getPaddingLeft();
+    //    int childW;
+    //    int childH;
+    //    MarginLayoutParams layoutParams = null;
+    //    for ( int i = 0;i < getChildCount();i++ ) {
+    //      View child = getChildAt(i);
+    //      layoutParams = (MarginLayoutParams) child.getLayoutParams();
+    //
+    //      //子元素不可见时，不参与布局，因此不需要将其尺寸计算在内
+    //      if ( child.getVisibility() == View.GONE ) {
+    //        continue;
+    //      }
+    //
+    //      childW = child.getMeasuredWidth();
+    //      childH = child.getMeasuredHeight();
+    //
+    //      leftStart += layoutParams.leftMargin;
+    //      topStart += layoutParams.topMargin;
+    //
+    //      // 确定子 View 位置
+    //      child.layout(leftStart,topStart, leftStart + childW, topStart + childH);
+    //
+    //      leftStart += childW + layoutParams.rightMargin;
+    //      topStart += childH + layoutParams.bottomMargin;
+    //    }
   }
 
   /**

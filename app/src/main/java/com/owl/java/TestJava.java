@@ -8,7 +8,10 @@ package com.owl.java;
 public class TestJava {
 
   public static void main(String[] args) {
-    AA aa = new AA();
-    aa.printF();
+//    AA aa = new AA();
+//    aa.printF();
+
+    String format = String.format("%s 天", 6);
+    System.out.println(format);
   }
 }
