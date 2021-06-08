@@ -297,36 +297,63 @@ public class CanvasView extends View {
    *
    * <p>MeasureSpec.getSize()
    *
+   * <p>resolveSize()
+   *
    * @param widthMeasureSpec
    * @param heightMeasureSpec
    */
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    // 父 View 推荐的宽高
     int widthMode = MeasureSpec.getMode(widthMeasureSpec);
     int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-
     int heightMode = MeasureSpec.getMode(heightMeasureSpec);
     int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
+    // 我们希望的宽高
+    int hopeW;
+    int hopeH;
     // resultW 代表最终设置的宽，resultH 代表最终设置的高
-    int resultW = widthSize;
-    int resultH = heightSize;
+    int resultW;
+    int resultH;
 
-    // 注意考虑 margins 和 padding 的值
+    // View 模板代码，省略了 exactly 模式，高度同理
+    //    hopeW = (int) mPaint.measureText(mText);
+    //    hopeW += getPaddingLeft() + getPaddingRight();
+    //    hopeH = mTextSize + getPaddingTop() + getPaddingBottom();
+    //
+    //    // ViewGroup 模板代码
+    //    hopeW = getPaddingLeft() + getPaddingRight();
+    //    hopeH = getPaddingTop() + getPaddingBottom();
+    //    measureChildren(widthMeasureSpec, heightMeasureSpec);
+    //    MarginLayoutParams layoutParams;
+    //    for (int i = 0; i < getChildCount(); i++) {
+    //      View child = getChildAt(i);
+    //      layoutParams = (MarginLayoutParams) child.getLayoutParams();
+    //      // 子元素不可见时，不参与布局，因此不需要将其尺寸计算在内
+    //      if (child.getVisibility() == View.GONE) {
+    //        continue;
+    //      }
+    //      hopeW += child.getMeasuredWidth() + layoutParams.leftMargin + layoutParams.rightMargin;
+    //      hopeH += child.getMeasuredHeight() + layoutParams.topMargin + layoutParams.bottomMargin;
+    //    }
 
-    if (widthMode == MeasureSpec.AT_MOST) {
-      // resultW = contentW < widthSize ? contentW : widthSize;
-    }
-
-    if (heightMode == MeasureSpec.AT_MOST) {
-      // resultH = contentH < widthSize ? contentH : heightSize;
-    }
+    // 下面代码 View 和 ViewGroup 两者相同
+    //    if (widthMode == MeasureSpec.AT_MOST) {
+    //      if (!TextUtils.isEmpty(mText)) {
+    //        resultW = Math.min(hopeW, widthSize);
+    //      }
+    //    } else if (widthMode == MeasureSpec.EXACTLY) {
+    //      resultW = widthSize;
+    //    } else if (widthMode == MeasureSpec.UNSPECIFIED) {
+    //      resultW = hopeW;
+    //    }
     // setMeasuredDimension(resultW, resultH);
   }
 
   @Override
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+    // ViewGroup 模板代码
     //    int topStart = getPaddingTop();
     //    int leftStart = getPaddingLeft();
     //    int childW;
