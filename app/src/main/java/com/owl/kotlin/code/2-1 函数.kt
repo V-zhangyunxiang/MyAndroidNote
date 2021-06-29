@@ -33,7 +33,6 @@ fun main(args: Array<String>) {
         因为指明了 key，参数顺序可以与实际顺序不一致
         只能用于 kotlin 函数，Java 无法使用
     */
-
     defaultParam("2", age = 25, name = "jack")
     vararg(*array)
 }

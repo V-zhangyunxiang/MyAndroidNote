@@ -64,20 +64,20 @@ task other {
 }
 
 /**
+ *
+ * 除了在 build.gradle 中编写的自定义插件，还可以将插件的源代码放在 rootProjectDir(根目录)/buildSrc/src/main/groovy 目录中，Gradle 会自动识别来完成编译和测试
+ *
  * 自定义 Gradle 插件主要有三种方式，分别是 build.gradle 中编写、buildSrc 工程项目中编写、独立项目中编写
  */
 class MyPlugin implements Plugin<Project> {
+
     @Override
-    void apply(Project project) {
-        println "project 是 = ${project.getProject()}"
-        println "rootProject 是 = ${project.getRootProject()}"
+    void apply(org.gradle.api.Project target) {
+        println "project 是 = ${target.getProject()}"
+        println "rootProject 是 = ${target.getRootProject()}"
         println "myPlugin invoked!"
     }
 }
-
-/**
- * 除了在 build.gradle 中编写的自定义插件，还可以将插件的源代码放在 rootProjectDir(根目录)/buildSrc/src/main/groovy 目录中，Gradle 会自动识别来完成编译和测试
- */
 
 
 
