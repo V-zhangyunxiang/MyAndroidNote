@@ -45,7 +45,7 @@ public class MyTypeEvaluatorView extends View {
     if (currentPoint == null) {
       currentPoint = new Point(RADIUS, RADIUS);
       drawCircle(canvas);
-      //      startAnimation();
+      // startAnimation();
       startInterpolatorAnimation();
     } else {
       drawCircle(canvas);

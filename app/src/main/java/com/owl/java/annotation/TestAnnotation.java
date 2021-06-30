@@ -1,4 +1,4 @@
-package com.owl.android_simple.annotation;
+package com.owl.java.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
