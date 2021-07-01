@@ -8,7 +8,7 @@ android {
     defaultConfig {
         applicationId "com.zyx.testproject"
         minSdkVersion 22
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -32,11 +32,6 @@ android {
             multiDexKeepFile file('multidex-config.txt')
         }
     }
-    compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    }
-
 
 //    dimension 'demo'
 //
@@ -76,10 +71,10 @@ android {
         }
     }
 
-//    compileOptions {
-//        sourceCompatibility JavaVersion.VERSION_1_8
-//        targetCompatibility JavaVersion.VERSION_1_8
-//    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
