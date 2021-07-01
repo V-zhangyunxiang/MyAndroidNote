@@ -47,6 +47,7 @@ import kotlin.coroutines.suspendCoroutine
  *      isCompleted: Boolean //是否完成
  *      cancel()             // 取消协程，不会立即停止，取消后再次使用时需要检查协程是否处于活动状态
  *      join()               // 堵塞当前线程直到协程执行完毕
+ *      cancelAndJoin()      // 两者结合，取消并等待协程完成
  *     生命周期
  *       New创建 - Active活跃 - complete完成
  *  12.异常处理
