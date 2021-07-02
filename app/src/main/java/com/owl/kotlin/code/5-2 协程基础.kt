@@ -3,10 +3,7 @@ package com.owl.kotlin.code
 import android.util.Log
 import kotlinx.coroutines.*
 import kotlin.concurrent.thread
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.startCoroutine
-import kotlin.coroutines.suspendCoroutine
+import kotlin.coroutines.*
 
 /**
  *  1.什么是协程？
@@ -30,14 +27,17 @@ import kotlin.coroutines.suspendCoroutine
  *    父协程需等待子协程执行完毕后才会最终进入完成状态，而不管父协程本身的协程体是否已执行完
  *    子协程会继承父协程上下文中的元素，如果自身有相同 Key 的成员，则覆盖对应 Key，覆盖效果仅在自身范围内有效
  *  7.协程取消
- *    取消线程一版采用标志位方式，过渡到 kotlin 协程，存活 -> isActive 取消 -> cancel
+ *    1.取消线程一般采用标志位方式，使用前判断当前协程是否存活 -> isActive，取消 -> cancel()
+ *    2.已取消的作用域无法再创建协程
+ *    3.父协程取消会递归取消所有子协程
  *  8.创建作用域(GlobalScope runBlocking 自定义作用域)
- *  9.在作用域中创建协程
+ *  9.协程构造器，CoroutineScope 的扩展方法
  *    launch & async 创建一个「不堵塞」当前线程的新协程
  *    launch 返回一个 Job，用于协程监督与取消，用于无返回值的场景
  *    async 返回一个 Job 的子类 Deferred，可通过 await() 获取完成时返回值
- *  10.suspend 关键字
- *     用于定义一个挂起函数，它就是一个标记，告知编译器，这个函数需在协程中执行
+ *  10.suspend 挂起函数
+ *     用于定义一个挂起函数，它就是一个标记，告知编译器，这个函数需在协程中执行，仅仅使用 suspend 并不会真的挂起，要在 suspend 函数内部调用某个自带的挂起函数
+ *     对应的恢复为 resumeWith
  *  11.Job
  *     含义
  *      调用 launch 函数会返回一个 Job 对象，代表一个协程的工作任务
@@ -61,105 +61,128 @@ import kotlin.coroutines.suspendCoroutine
  *       2.用 supervisorScope 代替 CoroutineScope
  *  13.启动模式
  *     CoroutineStart
- *     DEFAULT 创建后立即开始调度，调度前被取消，直接进入取消响应状态
- *     LAZY    懒加载，不会立即开始调度，需要手动调用start、join 或 await 才会开始调度，如果调度前就被取消，协程将直接进入异常结束状态
+ *     DEFAULT 创建后立即开始调度，调度前被取消，直接进入取消响应状态(并行)
+ *     LAZY    懒加载，不会立即开始调度，需要手动调用 start、join 或 await 才会开始调度，如果调度前就被取消，协程将直接进入异常结束状态(串行)
  *  14.调度器
  *     Dispatchers.Default    共享后台线程池里的线程
  *     Dispatchers.Main       Android 主线程
  *     Dispatchers.IO         IO 密集型的任务
  *     Dispatchers.Unconfined 不限制，使用父 Coroutine 的线程
  *     Dispatchers.newSingleThreadContext 使用新的线程
+ *     当 launch {...} 在不带参数的情况下使用时，它从外部的协程作用域继承上下文和调度器，即和 runBlocking 保持一致
+ *     而在 GlobalScope 中启动协程时默认使用的调度器是 Dispatchers.default
  *  15.withContext()
  *     withContext 不会创建新的协程，常用于切换线程
  *     它也是一个挂起方法，直到结束返回结果
  *     多个 withContext 是串行执行的，适用于下一个任务依赖上一个任务的结果
  *  16.拦截器
  *     协程启动时，挂起时，返回结果时会触发看触发拦截器代码
+ *  17.channel
+ *  18.Flow
  *
  *  重要: Job、调度器、启动模式、拦截器都是属于 CoroutineContext 上下文环境，如果需要为协程定义多个上下文元素，使用 + 运算符
  *
  */
 fun main() {
     //runBlocking()
-    //globalScope()
+    globalScope()
     //mainScope()
+//    val mainActivity = MainActivity()
+//    mainActivity.test()
+    //源码示例
+//    suspend { }.startCoroutine(object : Continuation<Unit> {
+//        override val context: CoroutineContext
+//            get() = EmptyCoroutineContext
+//
+//        override fun resumeWith(result: Result<Unit>) {
+//            TODO("Not yet implemented")
+//        }
+//
+//    })
 }
 
 /**
  *    方法一 使用 runBlocking 顶层函数，线程阻塞(类似 thread.sleep)，但其内部协程是非阻塞的
- *    runBlocking 只会等待相同作用域的协程完成才会退出，而不会等待 GlobalScope 等其它作用域启动的协程完成
+ *    runBlocking 只有当内部 相同作用域 的所有协程全部结束后，在 runBlocking 后的代码才能执行
+ *    runBlocking 只会等待 相同作用域 的协程完成才会退出，而不会等待 GlobalScope 等其它作用域启动的协程
  *    runBlocking {
  *     getImage(imageId)
  *    }
  */
 fun runBlocking() {
-    println("start")
+    println("start->${Thread.currentThread().name}")
     runBlocking {
-        launch {
-            repeat(3) {
-                //delay(100)
-                println("launchA - $it")
-            }
+        launch() {
+            //delay(100)
+            println("launchA ->${Thread.currentThread().name}")
         }
-        launch {
-            repeat(3) {
-                //delay(100)
-                println("launchB - $it")
-            }
+        launch() {
+            //delay(100)
+            println("launchB ->${Thread.currentThread().name}")
         }
         GlobalScope.launch {
-            repeat(3) {
-                //delay(110)
-                println("GlobalScope - $it")
-            }
+            //delay(110)
+            println("GlobalScope ->${Thread.currentThread().name}")
         }
+        println("runBlocking->${Thread.currentThread().name}")
     }
-    println("end")
+    println("end->${Thread.currentThread().name}")
 }
 
 /**
  *    方法二 使用 GlobalScope 全局作用域单例对象，非线程阻塞，但其生命周期与 app 一致
+ *    默认使用的调度器是 Dispatchers.default
  *    GlobalScope.launch {
  *      getImage(imageId)
  *    }
  */
 fun globalScope() {
-    println("start")
+    println("start->${Thread.currentThread().name}")
     GlobalScope.launch {
         launch {
-            delay(300)
-            println("launch A")
+            delay(200)
+            println("launch A->${Thread.currentThread().name}")
         }
         launch {
             delay(300)
-            println("launch B")
+            println("launch B->${Thread.currentThread().name}")
+            launch {
+                delay(70)
+                println("launch C->${Thread.currentThread().name}")
+            }
         }
-        println("GlobalScope")
+        println("GlobalScope->${Thread.currentThread().name}")
     }
-    println("end")
+    println("end->${Thread.currentThread().name}")
     Thread.sleep(400)  // 此处小于 300 ms 时就看不到 launch A/B 日志的输出, JVM 保活
 }
 
 /**
  *    方法三，自定义作用域
- *    1.让类继承 CoroutineScope 接口，让该类成为一个协程作用域
- *    2.使用 MainScope() 函数
+ *    1.让类继承 CoroutineScope 接口，让该类成为一个协程作用域，非线程阻塞
+ *    2.使用 MainScope() 函数，Dispatchers.Main 作为默认的调度器
  *    3.使用 coroutineScope() 和 supervisorScope() 创建子作用域，只能在一个已有的协程作用域中调用
  *      前者出现异常时会把异常抛出(父协程及其他子协程会被取消)，后者出现异常时不会影响其他子协程
  */
-class MainActivity(override val coroutineContext: CoroutineContext) : CoroutineScope {
+class MainActivity(override val coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope {
     fun test() {
+        println("1->${Thread.currentThread().name}")
         launch {
-
+            println("2->${Thread.currentThread().name}")
+            loadUrl()
+            refreshUI()
         }
+        Thread.sleep(400)
     }
 
-    suspend fun loadUrl() = coroutineScope {
-
+    private suspend fun loadUrl() = coroutineScope {
+        println("loadUrl->${Thread.currentThread().name}")
     }
 
-    suspend fun refreshUI() = supervisorScope {
-
+    private suspend fun refreshUI() = supervisorScope {
+        launch(Dispatchers.Main) {
+            println("refreshUI->${Thread.currentThread().name}")
+        }
     }
 }
 
