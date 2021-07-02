@@ -85,8 +85,8 @@ import kotlin.coroutines.*
  */
 fun main() {
     //runBlocking()
-    globalScope()
-    //mainScope()
+    //globalScope()
+    mainScope()
 //    val mainActivity = MainActivity()
 //    mainActivity.test()
     //源码示例
@@ -180,9 +180,7 @@ class MainActivity(override val coroutineContext: CoroutineContext = EmptyCorout
     }
 
     private suspend fun refreshUI() = supervisorScope {
-        launch(Dispatchers.Main) {
-            println("refreshUI->${Thread.currentThread().name}")
-        }
+        println("refreshUI->${Thread.currentThread().name}")
     }
 }
 
