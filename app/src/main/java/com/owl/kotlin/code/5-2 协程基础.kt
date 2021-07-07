@@ -2,8 +2,12 @@ package com.owl.kotlin.code
 
 import android.util.Log
 import kotlinx.coroutines.*
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import okhttp3.Dispatcher
 import kotlin.concurrent.thread
 import kotlin.coroutines.*
+import kotlin.system.measureTimeMillis
 
 /**
  *  1.什么是协程？
@@ -34,7 +38,7 @@ import kotlin.coroutines.*
  *  9.协程构造器，CoroutineScope 的扩展方法
  *    launch & async 创建一个「不堵塞」当前线程的新协程
  *    launch 返回一个 Job，用于协程监督与取消，用于无返回值的场景
- *    async 返回一个 Job 的子类 Deferred，可通过 await() 获取完成时返回值
+ *    async 返回一个 Job 的子类 Deferred，可通过 await() 获取完成时返回值，await()会阻塞当前线程直到协程返回结果值
  *  10.suspend 挂起函数
  *     用于定义一个挂起函数，它就是一个标记，告知编译器，这个函数需在协程中执行，仅仅使用 suspend 并不会真的挂起，要在 suspend 函数内部调用某个自带的挂起函数
  *     对应的恢复为 resumeWith
@@ -76,19 +80,22 @@ import kotlin.coroutines.*
  *     它也是一个挂起方法，直到结束返回结果
  *     多个 withContext 是串行执行的，适用于下一个任务依赖上一个任务的结果
  *  16.拦截器
- *     协程启动时，挂起时，返回结果时会触发看触发拦截器代码
+ *     协程启动时，挂起时，返回结果时会触发拦截器代码
  *  17.channel
  *  18.Flow
  *
- *  重要: Job、调度器、启动模式、拦截器都是属于 CoroutineContext 上下文环境，如果需要为协程定义多个上下文元素，使用 + 运算符
+ *  重要: Job、调度器、拦截器，协程名称都是属于 CoroutineContext 上下文环境，如果需要为协程定义多个上下文元素，使用 + 运算符
  *
  */
 fun main() {
-    //runBlocking()
+    // runBlocking()
     //globalScope()
     mainScope()
 //    val mainActivity = MainActivity()
-//    mainActivity.test()
+    //mainActivity.test()
+    // supervisorScope()
+    // Interceptor()
+
     //源码示例
 //    suspend { }.startCoroutine(object : Continuation<Unit> {
 //        override val context: CoroutineContext
@@ -113,21 +120,39 @@ fun runBlocking() {
     println("start->${Thread.currentThread().name}")
     runBlocking {
         launch() {
-            //delay(100)
+            delay(100)
             println("launchA ->${Thread.currentThread().name}")
         }
         launch() {
-            //delay(100)
+            delay(100)
             println("launchB ->${Thread.currentThread().name}")
         }
         GlobalScope.launch {
-            //delay(110)
+            delay(120)
             println("GlobalScope ->${Thread.currentThread().name}")
         }
         println("runBlocking->${Thread.currentThread().name}")
     }
     println("end->${Thread.currentThread().name}")
 }
+
+fun runBlocking2() {
+    GlobalScope.launch(Dispatchers.IO) {
+        delay(600)
+        println("GlobalScope")
+        async {
+
+        }
+    }
+    runBlocking {
+        delay(500)
+        println("runBlocking")
+    }
+    //主动休眠两百毫秒，使得和 runBlocking 加起来的延迟时间少于六百毫秒
+    Thread.sleep(200)
+    println("after sleep")
+}
+
 
 /**
  *    方法二 使用 GlobalScope 全局作用域单例对象，非线程阻塞，但其生命周期与 app 一致
@@ -147,7 +172,7 @@ fun globalScope() {
             delay(300)
             println("launch B->${Thread.currentThread().name}")
             launch {
-                delay(70)
+                //delay(70)
                 println("launch C->${Thread.currentThread().name}")
             }
         }
@@ -162,6 +187,7 @@ fun globalScope() {
  *    1.让类继承 CoroutineScope 接口，让该类成为一个协程作用域，非线程阻塞
  *    2.使用 MainScope() 函数，Dispatchers.Main 作为默认的调度器
  *    3.使用 coroutineScope() 和 supervisorScope() 创建子作用域，只能在一个已有的协程作用域中调用
+ *      都是挂起函数
  *      前者出现异常时会把异常抛出(父协程及其他子协程会被取消)，后者出现异常时不会影响其他子协程
  */
 class MainActivity(override val coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope {
@@ -184,10 +210,51 @@ class MainActivity(override val coroutineContext: CoroutineContext = EmptyCorout
     }
 }
 
+fun supervisorScope() {
+    runBlocking {
+        launch {
+            delay(100)
+            println("Task from runBlocking")
+        }
+        supervisorScope {
+            launch {
+                delay(500)
+                println("Task throw Exception")
+                throw Exception("failed")
+            }
+            launch {
+                delay(600)
+                println("Task from nested launch")
+            }
+        }
+        println("Coroutine scope is over")
+    }
+}
+
+fun startMode() {
+    val time = measureTimeMillis {
+        runBlocking {
+            val asyncA = async(start = CoroutineStart.LAZY) {
+                delay(3000)
+                1
+            }
+            val asyncB = async(start = CoroutineStart.LAZY) {
+                delay(4000)
+                2
+            }
+            println(asyncA.await() + asyncB.await())
+        }
+    }
+    println(time)
+}
+
 fun mainScope() {
     val mainScope = MainScope()
-    mainScope.launch {
+    //Dispatchers.setMain(Dispatchers.Main)
+    mainScope.launch(Dispatchers.IO + CoroutineName("aaa") + SupervisorJob() + CoroutineName("bbb")) {
+        println("mainScope-1->${Thread.currentThread().name}")
         launch {
+            println("mainScope-2->${Thread.currentThread().name}")
             delay(500)
             println("Task from main child scope")
         }
@@ -197,7 +264,37 @@ fun mainScope() {
     println("Coroutine scope is over")
 }
 
+fun Interceptor() {
+    GlobalScope.launch(MyInterceptor()) {
+        val ss = async {
+            delay(200)
+            println("Interceptor")
+            "嘿嘿嘿"
+        }
+        val result = ss.await()
+        println("result = $result")
+    }
+}
+
+
+class MyInterceptor : ContinuationInterceptor {
+    override val key = ContinuationInterceptor
+    override fun <T> interceptContinuation(continuation: Continuation<T>): Continuation<T> {
+        return MyContinuation(continuation)
+    }
+
+}
+
+class MyContinuation<T>(private val continuation: Continuation<T>) : Continuation<T> {
+    override val context = continuation.context
+    override fun resumeWith(result: Result<T>) {
+        println("result= $result")
+        continuation.resumeWith(result)
+    }
+
+}
 
 suspend fun getImage() = withContext(Dispatchers.IO) {
 
 }
+
