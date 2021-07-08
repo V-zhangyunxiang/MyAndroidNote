@@ -4,7 +4,7 @@ package com.owl.kotlin.code
  * Java 中目录和包的规则
  *  public 类必须和文件名相同
  *  一个 Java 文件只能有一个 public 类
- *  使用  package 声明一个包
+ *  使用 package 声明一个包
  *  目录名通过 . 来分割
  *  声明的包结构必须与目录结构对应
  *

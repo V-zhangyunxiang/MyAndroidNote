@@ -124,7 +124,7 @@ fun main() {
     property1.set(simpleClass, 1)
     println("property1= " + property1(simpleClass))
 
-    //通过 receiver 调用,set/get 不需要传递 receiver
+    //通过 receiver 对象调用, set/get 不需要传递 receiver
     val property2: KMutableProperty0<Int> = simpleClass::s
     property2.set(2)
     property2.get()

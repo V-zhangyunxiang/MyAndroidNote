@@ -25,7 +25,7 @@ package com.owl.kotlin.code
  * */
 fun main(args: Array<String>) {
     yy(g3)
-    println(args.contentToString())
+    // println(args.contentToString())
     /*
       具名参数
         为了解决多个参数时，很难区分每个参数的含义
@@ -33,8 +33,8 @@ fun main(args: Array<String>) {
         因为指明了 key，参数顺序可以与实际顺序不一致
         只能用于 kotlin 函数，Java 无法使用
     */
-    defaultParam("2", age = 25, name = "jack")
-    vararg(*array)
+//    defaultParam("2", age = 25, name = "jack")
+//    vararg(*array)
 }
 
 //函数的引用(非常重要，函数引用可以作为参数传递使用)

@@ -18,7 +18,7 @@ var a = 0
 var c = if (a == 3) 4 else 5
 
 fun Test() {
-    anbel@ when (a) {
+    label@ when (a) {
         0 -> c = 5
         1 -> c = 10
         else -> c = 20
