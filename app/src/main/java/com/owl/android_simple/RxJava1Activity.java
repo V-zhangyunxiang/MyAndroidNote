@@ -25,26 +25,27 @@ import rx.subjects.BehaviorSubject;
  *
  * @author zhangyunxiang Date 2019/1/3 10:53
  */
-public class RxJavaActivity extends AppCompatActivity {
+public class RxJava1Activity extends AppCompatActivity {
 
-  private static final String TAG = "zyx";
+  public static final String TAG = "zyx";
 
-  public static void main(String[] args) {
-    // onCreate(null);
-    // bufferTest();
-    // delay();
-    // doSomething();
-  }
+  //  public static void main(String[] args) {
+  //    RxJava1Activity rxJava1Activity = new RxJava1Activity();
+  //    // rxJava1Activity.subscription();
+  //    rxJava1Activity.doSomething();
+  //  }
 
-  public void onCreate(@Nullable Bundle savedInstanceState) {
+  // Observer 也总是会先被转换成一个 Subscriber 再使用
+  // Subscriber 新增 onStart()，它在订阅开始时间还未发送前调用
+
+  @Override
+  protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.tab_vp_four);
-    // BehaviorSubject();
     doSomething();
   }
-  // ------------------RxJava1---------------------------------------------------------
 
-  // Observable.subscribe() Rx1 得到一个 Subscription 对象；Rx2 则是 Disposable 对象
+  // Observable.subscribe() 得到一个 Subscription 对象
+  // 当被观察者全部执行完后，会自动解除订阅
   private void subscription() {
     Subscription subscription =
         Observable.from(new ArrayList<>())
@@ -59,43 +60,47 @@ public class RxJavaActivity extends AppCompatActivity {
   }
 
   // 使用 concat 和 merge 时第 1 个被观察者发送 Error 事件后，第 2 个被观察者则不会继续发送事件
-
   // 组合(多个被观察者)一起发送数据，合并后按发送顺序(串行)执行
+  // 上一个 Observable 执行完下一个才能执行
+  // 123 789 456 10 11 12
   private void concat() {
     Observable.concat(
             Observable.just(1, 2, 3),
-            Observable.just(4, 5, 6),
             Observable.just(7, 8, 9),
+            Observable.just(4, 5, 6),
             Observable.just(10, 11, 12))
         .subscribe(
             new Observer<Integer>() {
               @Override
               public void onNext(Integer value) {
-                Log.d(TAG, "接收到了事件" + value);
+                System.out.println("接收到了事件" + value);
               }
 
               @Override
               public void onError(Throwable e) {
-                Log.d(TAG, "对Error事件作出响应");
+                System.out.println("对Error事件作出响应");
               }
 
               @Override
               public void onCompleted() {
-                Log.d(TAG, "对Complete事件作出响应");
+                System.out.println("对Complete事件作出响应");
               }
             });
   }
 
   // 组合(多个被观察者)一起发送数据，合并后按时间线(并行)执行
+  // 谁先执行完谁先通知
+  // 456 123
   private void merge() {
-    Observable.merge(
-            Observable.interval(100, 1000, TimeUnit.MILLISECONDS),
-            Observable.interval(300, 1000, TimeUnit.MILLISECONDS))
+    Observable<Integer> observable1 = Observable.just(1, 2, 3).delay(3, TimeUnit.SECONDS);
+    Observable<Integer> observable2 = Observable.just(4, 5, 6).delay(1, TimeUnit.SECONDS);
+
+    Observable.merge(observable1, observable2)
         .subscribe(
-            new Observer<Long>() {
+            new Observer<Integer>() {
 
               @Override
-              public void onNext(Long value) {
+              public void onNext(Integer value) {
                 Log.d(TAG, "接收到了事件" + value);
               }
 
@@ -133,7 +138,7 @@ public class RxJavaActivity extends AppCompatActivity {
             });
   }
 
-  // 严格按照原先事件序列 进行对位合并，最终结果不受发射事件延迟的影响
+  // 严格按照原先事件序列 进行对位合并，最终结果不受发射事件延迟的影响，双方必须都发射一个最新的数据才会发射
   // 最终合并的事件数量 = 多个被观察者（Observable）中数量最少的数量
   private static void zip() {
     Observable<Integer> obs1 =
@@ -218,6 +223,7 @@ public class RxJavaActivity extends AppCompatActivity {
 
   // CombineLatest（） = 按时间合并，即在同一个时间点上合并，最终结果受到发射延迟的影响
   // 将先发送了数据的 Observables 的最新（最后）一个数据与另外一个 Observable 发送的每个数据结合
+  // 任意一个 Observable 发射数据，整体就会发射
   private static void combineLatest() {
     Observable<Integer> obs1 =
         Observable.create(
@@ -299,31 +305,12 @@ public class RxJavaActivity extends AppCompatActivity {
             });
   }
 
-  // reduce（）但本质都是前 2 个数据聚合，然后与后 1 个数据继续进行聚合，依次类推
-  // Observable.just(1,2,3,4)
-  //                .reduce(new BiFunction<Integer, Integer, Integer>() {
-  //                    // 在该复写方法中复写聚合的逻辑
-  //                    @Override
-  //                    public Integer apply(@NonNull Integer s1, @NonNull Integer s2) throws
-  // Exception {
-  //                        Log.e(TAG, "本次计算的数据是： "+s1 +" 乘 "+ s2);
-  //                        return s1 * s2;
-  //                        // 本次聚合的逻辑是：全部数据相乘起来
-  //                        // 原理：第1次取前2个数据相乘，之后每次获取到的数据 = 返回的数据x原始下1个数据每
-  //                    }
-  //                }).subscribe(new Consumer<Integer>() {
-  //            @Override
-  //            public void accept(@NonNull Integer s) throws Exception {
-  //                Log.e(TAG, "最终计算的结果是： "+s);
-  //
-  //            }
-  //        });
-
-  // collect()    将被观察者Observable发送的数据事件收集到一个数据结构里
+  // collect()    将被观察者 Observable 发送的数据事件收集到一个数据结构里
   // startWith()/startWithArray() 在一个被观察者发送事件前，追加发送一些数据/一个新的被观察者
-  // count()      统计被观察者发送事件的数量
-  // retry（）     重试，即当出现错误时，让被观察者（Observable）重新发射数据
-  // repeat（）    无条件地、重复发送 被观察者事件
+  // count()     统计被观察者发送事件的数量
+  // retry()     重试，即当出现错误时，让被观察者（Observable）重新发射数据
+  // repeat()    无条件地、重复发送 被观察者事件
+  // reduce()    把被观察者发送的事件聚合成一个事件发送
 
   // BehaviorSubject : 被订阅之前的最后一个数据(如果订阅之前有事件，则会替换到默认设置的数据)，再接收订阅之后发射过来的数据
   // ReplaySubject :   不论订阅发生在什么时候，都发射全部数据; createWithSize(n) 只缓存订阅前最后发送的 n 条数据;createWithTime()
@@ -352,9 +339,12 @@ public class RxJavaActivity extends AppCompatActivity {
     subject.onError(new Exception("aaaaaa"));
   }
 
-  // do 系列方法，有执行的前后顺序  flatMap(无序) concatMap(有序)
+  // do 系列方法，有执行的前后顺序
+  // flatMap(新合并生成的事件序列顺序是无序的，即与旧序列发送事件的顺序无关) concatMap(有序)
   // doOnSubscribe 下一行用 subscribeOn 指定其执行的线程
   // doOnNext 上一行用 observeOn 指定其执行的线程
+  // observeOn() 指定的是它之后的操作所在的线程。因此如果有多次切换线程的需求，只要在每个想要切换线程的位置调用一次 observeOn()
+  // 当使用了多个 subscribeOn() 的时候，只有第一个 subscribeOn() 起作用
   private static void doSomething() {
     Observable.create(
             new Observable.OnSubscribe<Integer>() {
@@ -373,6 +363,7 @@ public class RxJavaActivity extends AppCompatActivity {
                 Log.i(TAG, "doOnSubscribe");
               }
             })
+        // 执行 Next 事件前调用
         .doOnNext(
             new Action1<Integer>() {
               @Override
@@ -412,6 +403,7 @@ public class RxJavaActivity extends AppCompatActivity {
               @Override
               public void call() {}
             })
+        // 当 Observable 每发送 1 次数据事件就会调用 1 次
         .doOnEach(
             new Action1<Notification<? super Integer>>() {
               @Override
@@ -612,215 +604,4 @@ public class RxJavaActivity extends AppCompatActivity {
               public void onCompleted() {}
             });
   }
-
-  //      ------------------------RxJava2-------------------------------------------------
-  //        io.reactivex.Observable.create(new ObservableOnSubscribe<Integer>() {
-  //            @Override
-  //            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-  //                emitter.onNext(1);
-  //                emitter.onNext(2);
-  //                emitter.onComplete();
-  //                emitter.onNext(3);
-  //            }
-  //        }).concatArrayDelayError().subscribe(new Observer<Integer>() {
-  //            private Disposable disposable;
-  //            private int i;
-  //            private CompositeDisposable compositeDisposable = new CompositeDisposable();
-  //
-  //            @Override
-  //            public void onSubscribe(Disposable d) {
-  //
-  //                disposable = d;
-  //                compositeDisposable.add(disposable);
-  //            }
-  //
-  //            @Override
-  //            public void onNext(Integer integer) {
-  //
-  ////                i++;
-  ////                if (i == 2) {
-  ////                    disposable.dispose();
-  ////                }
-  ////                Log.d(TAG, "isDisposed: " + disposable.isDisposed());
-  //            }
-  //
-  //            @Override
-  //            public void onError(Throwable e) {
-  //                compositeDisposable.clear();
-  //            }
-  //
-  //            @Override
-  //            public void onComplete() {
-  //            }
-  //        });
-  // new consumer 自定义接收哪些事件,subscribe 可设置接收多个 consumer 事件
-  //        Observable.create(new ObservableOnSubscribe<Integer>() {
-  //            @Override
-  //            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-  //                Log.d(TAG, "emit 1");
-  //                emitter.onNext(1);
-  //                Log.d(TAG, "emit 2");
-  //                emitter.onNext(2);
-  //                emitter.onComplete();
-  //                Log.d(TAG, "emit 3");
-  //                emitter.onNext(3);
-  //            }
-  //        }).subscribe(new Consumer<Integer>() {
-  //            @Override
-  //            public void accept(Integer integer) throws Exception {
-  //                Log.d(TAG, "accept:" + integer);
-  //            }
-  //        });
-
-  //        Observable.create(new ObservableOnSubscribe<Integer>() {
-  //            @Override
-  //            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-  //                Log.d(TAG, "emit 1");
-  //                emitter.onNext(1);
-  //                Log.d(TAG, "emit 2");
-  //                emitter.onNext(2);
-  //                emitter.onComplete();
-  //                Log.d(TAG, "emit 3");
-  //                emitter.onNext(3);
-  //            }
-  //        }).subscribe(
-  //        new Consumer<Integer>() {
-  //            @Override
-  //            public void accept(Integer integer) throws Exception {
-  //
-  //            }
-  //        }, new Consumer<Throwable>() {
-  //            @Override
-  //            public void accept(Throwable throwable) throws Exception {
-  //
-  //            }
-  //        });
-
-  //        Observable<Integer> observable1 = Observable.create(new
-  // ObservableOnSubscribe<Integer>() {
-  //            @Override
-  //            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
-  //                Log.d(TAG, "emit 1");
-  //                emitter.onNext(1);
-  //                Thread.sleep(1000);
-  //
-  //                Log.d(TAG, "emit 2");
-  //                emitter.onNext(2);
-  //                Thread.sleep(1000);
-  //
-  //                Log.d(TAG, "emit 3");
-  //                emitter.onNext(3);
-  //                Thread.sleep(1000);
-  //
-  //                Log.d(TAG, "emit 4");
-  //                emitter.onNext(4);
-  //                Thread.sleep(1000);
-  //
-  //                Log.d(TAG, "emit complete1");
-  //                emitter.onComplete();
-  //            }
-  //        }).subscribeOn(Schedulers.io());
-  //
-  //        Observable<String> observable2 = Observable.create(new ObservableOnSubscribe<String>()
-  // {
-  //            @Override
-  //            public void subscribe(ObservableEmitter<String> emitter) throws Exception {
-  //                Log.d(TAG, "emit A");
-  //                emitter.onNext("A");
-  //                Thread.sleep(1000);
-  //
-  //                Log.d(TAG, "emit B");
-  //                emitter.onNext("B");
-  //                Thread.sleep(1000);
-  //
-  //                Log.d(TAG, "emit C");
-  //                emitter.onNext("C");
-  //                Thread.sleep(1000);
-  //
-  //                Log.d(TAG, "emit complete2");
-  //                emitter.onComplete();
-  //            }
-  //        }).subscribeOn(Schedulers.io());
-  //
-  //        Observable.zip(observable1, observable2, new BiFunction<Integer, String, String>() {
-  //            @Override
-  //            public String apply(Integer integer, String s) throws Exception {
-  //                return integer + s;
-  //            }
-  //        }).subscribe(new Observer<String>() {
-  //            @Override
-  //            public void onSubscribe(Disposable d) {
-  //                Log.d(TAG, "onSubscribe");
-  //            }
-  //
-  //            @Override
-  //            public void onNext(String s) {
-  //                Log.d(TAG, "onNext: " + s);
-  //            }
-  //
-  //            @Override
-  //            public void onError(Throwable e) {
-  //                Log.d(TAG, "onError");
-  //            }
-  //
-  //            @Override
-  //            public void onComplete() {
-  //                Log.d(TAG, "onComplete");
-  //            }
-  //        });
-
-  //        Flowable.create(new FlowableOnSubscribe<Integer>() {
-  //            @Override
-  //            public void subscribe(FlowableEmitter<Integer> emitter) throws Exception {
-  //                Log.d(TAG, "emit 1");
-  //                emitter.onNext(1);
-  //                Log.d(TAG, "emit 2");
-  //                emitter.onNext(2);
-  //                Log.d(TAG, "emit 3");
-  //                emitter.onNext(3);
-  //                Log.d(TAG, "emit complete");
-  //                emitter.onComplete();
-  // Flowable 水缸默认大小是 128 k ；BackpressureStrategy.BUFFER 不限制水缸大小
-  // 非自己 create 出来的 Flowable 使用下面 3 个代替 Flowable 参数
-  // onBackpressureBuffer()
-  // onBackpressureDrop()
-  // onBackpressureLatest()
-
-  // 获取下游处理能力,下游每消费 96 个事件便会自动触发内部的 request() 去设置上游的 requested 的值
-  // emitter.requested();
-  //                 for (int i = 0; i < 129; i++) {
-  //                     Log.d(TAG, "emit " + i);
-  //                     emitter.onNext(i);
-  //                 }
-  //             }
-  //         },
-  // BackpressureStrategy.ERROR).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Integer>() {
-  //             private Subscription mSubscription;
-
-  //             @Override
-  //             public void onSubscribe(Subscription s) {
-  //                 Log.d(TAG, "onSubscribe");
-  //                 mSubscription = s;
-  //                 //响应式拉取 : 光下游自己控制能接收几个不能算响应式，上游也要知道下游有多大的处理能力
-  //                 //可多次调用 request
-  // //              mSubscription.request(1);
-  //             }
-
-  //             @Override
-  //             public void onNext(Integer integer) {
-  //                 Log.d(TAG, "onNext: " + integer);
-  //             }
-
-  //             @Override
-  //             public void onError(Throwable t) {
-  //                 Log.w(TAG, "onError: ", t);
-  //                 mSubscription.cancel();
-  //             }
-
-  //             @Override
-  //             public void onComplete() {
-  //                 Log.d(TAG, "onComplete");
-  //             }
-  //         });
-  //       }
 }

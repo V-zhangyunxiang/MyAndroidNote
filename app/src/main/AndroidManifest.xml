@@ -16,7 +16,7 @@
     android:theme="@style/Theme.AppCompat.Light.NoActionBar"
     tools:ignore="GoogleAppIndexingWarning">
 
-    <activity android:name="com.owl.android_simple.GetMobileLanguage">
+    <activity android:name="com.owl.android_simple.RxJava2Act">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />

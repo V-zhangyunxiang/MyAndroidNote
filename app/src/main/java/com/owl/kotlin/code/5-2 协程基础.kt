@@ -20,6 +20,8 @@ import kotlin.system.measureTimeMillis
  *      线程Id + 线程状态 + 堆栈 + 寄存器状态等
  *    3.扩展到 Kotlin 协程中的上下文环境 → CoroutineContext，以 键值对 的方式存储各种不同元素
  *      Job(协程唯一标识) + CoroutineDispatcher(调度器) + ContinuationInterceptor(拦截器) + CoroutineName(协程名称，一般调试时设置)
+ *      Job、调度器、拦截器，协程名称都是属于 CoroutineContext 上下文环境，如果需要为协程定义多个上下文元素，使用 + 运算符
+ *      + 拼接时相同设置右侧元素会覆盖左侧元素
  *  4.什么是结构化并发？
  *    协程必须在作用域中才能启动，作用域中定义了一些父子协程的规则，Kotlin 协程通过作用域来管控域中的所有协程，作用域间可并列或包含，组成一个树状结构
  *  5.作用域
@@ -53,7 +55,7 @@ import kotlin.system.measureTimeMillis
  *      join()               // 堵塞当前线程直到协程执行完毕
  *      cancelAndJoin()      // 两者结合，取消并等待协程完成
  *     生命周期
- *       New创建 - Active活跃 - complete完成
+ *       New创建 - Active活跃 - Complete完成
  *  12.异常处理
  *     1.try-catch 直接捕获作用域内异常
  *     2.全局异常处理(只支持 launch 传入 CoroutineExceptionHandler)
@@ -84,17 +86,18 @@ import kotlin.system.measureTimeMillis
  *  17.channel
  *  18.Flow
  *
- *  重要: Job、调度器、拦截器，协程名称都是属于 CoroutineContext 上下文环境，如果需要为协程定义多个上下文元素，使用 + 运算符
+ *
  *
  */
 fun main() {
     // runBlocking()
     //globalScope()
-    mainScope()
+    //mainScope()
 //    val mainActivity = MainActivity()
     //mainActivity.test()
     // supervisorScope()
     // Interceptor()
+    startMode()
 
     //源码示例
 //    suspend { }.startCoroutine(object : Continuation<Unit> {
@@ -184,7 +187,7 @@ fun globalScope() {
 
 /**
  *    方法三，自定义作用域
- *    1.让类继承 CoroutineScope 接口，让该类成为一个协程作用域，非线程阻塞
+ *    1.让类实现 CoroutineScope 接口，让该类成为一个协程作用域，非线程阻塞
  *    2.使用 MainScope() 函数，Dispatchers.Main 作为默认的调度器
  *    3.使用 coroutineScope() 和 supervisorScope() 创建子作用域，只能在一个已有的协程作用域中调用
  *      都是挂起函数
@@ -201,7 +204,7 @@ class MainActivity(override val coroutineContext: CoroutineContext = EmptyCorout
         Thread.sleep(400)
     }
 
-    private suspend fun loadUrl() = coroutineScope {
+    private suspend fun loadUrl(): Unit = coroutineScope {
         println("loadUrl->${Thread.currentThread().name}")
     }
 
@@ -234,11 +237,11 @@ fun supervisorScope() {
 fun startMode() {
     val time = measureTimeMillis {
         runBlocking {
-            val asyncA = async(start = CoroutineStart.LAZY) {
+            val asyncA = async() {
                 delay(3000)
                 1
             }
-            val asyncB = async(start = CoroutineStart.LAZY) {
+            val asyncB = async() {
                 delay(4000)
                 2
             }
@@ -251,7 +254,7 @@ fun startMode() {
 fun mainScope() {
     val mainScope = MainScope()
     //Dispatchers.setMain(Dispatchers.Main)
-    mainScope.launch(Dispatchers.IO + CoroutineName("aaa") + SupervisorJob() + CoroutineName("bbb")) {
+    mainScope.launch() {
         println("mainScope-1->${Thread.currentThread().name}")
         launch {
             println("mainScope-2->${Thread.currentThread().name}")
