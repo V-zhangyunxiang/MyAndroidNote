@@ -4,9 +4,21 @@ package com.owl.kotlin.code
  *
  * forEach
  *
+ * 变换：
+ *
+ * filter
+ *
  * map
  *
  * flatMap
+ *
+ * 聚合
+ *
+ * fold  给定初始值，将元素按规则聚合，结果和初始化值类型一致
+ *
+ * sum   元素求和
+ *
+ * reduce 将元素依此按规则聚合，结果与元素类型一致
  *
  * */
 fun main() {

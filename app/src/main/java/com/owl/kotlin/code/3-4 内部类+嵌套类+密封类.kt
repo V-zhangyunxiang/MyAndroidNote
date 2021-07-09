@@ -56,6 +56,7 @@ fun check(sealedClass: SealedClass): String =
             is SealedClass.SonClass1 -> "1"
             is SealedClass.SonClass2 -> "2"
             is SonClass3 -> "3"
+            else -> ""
         }
 
 fun main() {

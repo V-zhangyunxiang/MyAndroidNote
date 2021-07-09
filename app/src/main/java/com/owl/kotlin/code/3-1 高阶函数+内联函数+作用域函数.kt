@@ -70,6 +70,7 @@ fun main() {
         p.name = "kim"
     }
 
+    //block: (T) -> R : R
     File("build.gradle").inputStream().reader().buffered()
             .use { println(it.readLine()) }
 }
