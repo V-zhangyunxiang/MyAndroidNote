@@ -11,7 +11,7 @@ import android.widget.TextView;
  *
  * @author zhangyunxiang Date 2019/1/17 14:46
  */
-public class IncludeLayoutTestActivity extends AppCompatActivity {
+public class IncludeLayoutTestAct extends AppCompatActivity {
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);

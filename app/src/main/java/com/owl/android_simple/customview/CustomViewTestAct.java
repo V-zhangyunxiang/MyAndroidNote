@@ -42,7 +42,7 @@ import java.util.List;
  5 onDraw	       实际绘制内容
  6 提供接口	     提供接口(提供设置数据的接口)
 * */
-public class CustomViewTestActivity extends AppCompatActivity {
+public class CustomViewTestAct extends AppCompatActivity {
 
   PieView pieView;
   int[] mColors = {

@@ -1,12 +1,8 @@
 package com.owl.kotlin.code
 
-import android.util.Log
-import com.owl.android_simple.RxJava1Activity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 
 @InternalCoroutinesApi

@@ -10,7 +10,7 @@ import com.owl.android_simple.R;
  *
  * @author zhangyunxiang Date 2021/1/22 16:29
  */
-public class AnimTypeEvaluatorActivity extends AppCompatActivity {
+public class AnimTypeEvaluatorAct extends AppCompatActivity {
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {

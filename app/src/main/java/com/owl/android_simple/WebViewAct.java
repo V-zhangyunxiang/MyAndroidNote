@@ -12,7 +12,7 @@ import android.webkit.WebViewClient;
  *
  * @author zhangyunxiang Date 2019/1/7 14:12
  */
-public class WebViewActivity extends AppCompatActivity {
+public class WebViewAct extends AppCompatActivity {
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);

@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 import com.owl.android_simple.view.VerificationCodeView;
 
-public class InputVerificationActivity extends AppCompatActivity {
+public class InputVerificationAct extends AppCompatActivity {
   private TextView textView;
 
   @Override

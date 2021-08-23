@@ -12,7 +12,7 @@ import java.util.Locale;
  *
  * @author zhangyunxiang Date 2019-11-11 14:06
  */
-public class GetMobileLanguage extends AppCompatActivity {
+public class GetMobileLanguageAct extends AppCompatActivity {
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {

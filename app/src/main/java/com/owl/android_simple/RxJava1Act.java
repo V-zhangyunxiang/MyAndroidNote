@@ -25,7 +25,7 @@ import rx.subjects.BehaviorSubject;
  *
  * @author zhangyunxiang Date 2019/1/3 10:53
  */
-public class RxJava1Activity extends AppCompatActivity {
+public class RxJava1Act extends AppCompatActivity {
 
   public static final String TAG = "zyx";
 

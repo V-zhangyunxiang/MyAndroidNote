@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author zhangyunxiang Date 2020-02-18 22:27
  */
-public class UpDownAnimActivity extends AppCompatActivity {
+public class UpDownAnimAct extends AppCompatActivity {
   UpDownView mView;
   ImageView mHand;
   ImageView mCircle;

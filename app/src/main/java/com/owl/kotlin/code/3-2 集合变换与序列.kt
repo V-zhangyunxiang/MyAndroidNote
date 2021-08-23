@@ -27,6 +27,6 @@ fun main() {
             .map { it * 2 + 1 }
             .forEach { println("forEach:${it}") }
 
-    list.flatMap { 0 until it }
+    list.flatMap { a: Int -> 0 until a }
 }
 

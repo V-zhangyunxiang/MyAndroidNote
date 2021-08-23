@@ -10,7 +10,7 @@ import android.util.Log;
 import android.view.View;
 import java.util.List;
 
-public class ExternalWebActivity extends AppCompatActivity {
+public class ExternalWebAct extends AppCompatActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {

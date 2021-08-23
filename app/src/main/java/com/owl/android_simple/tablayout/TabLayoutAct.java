@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author zhangyunxiang Date 2018/12/21 15:58
  */
-public class TabLayoutActivity extends AppCompatActivity {
+public class TabLayoutAct extends AppCompatActivity {
   private TabLayout mTabLayout;
 
   @Override
@@ -78,7 +78,7 @@ public class TabLayoutActivity extends AppCompatActivity {
           @Override
           public void onTabSelected(TabLayout.Tab tab) {
             if (tab.getTag() != null) {
-              Toast.makeText(TabLayoutActivity.this, tab.getText(), Toast.LENGTH_SHORT).show();
+              Toast.makeText(TabLayoutAct.this, tab.getText(), Toast.LENGTH_SHORT).show();
             }
           }
 

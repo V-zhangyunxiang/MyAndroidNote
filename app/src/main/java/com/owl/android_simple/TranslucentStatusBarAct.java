@@ -16,7 +16,7 @@ import android.view.WindowManager;
  *
  * @author zhangyunxiang Date 2018/12/21 13:48
  */
-public class TranslucentStatusBarActivity extends AppCompatActivity {
+public class TranslucentStatusBarAct extends AppCompatActivity {
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {

@@ -26,7 +26,7 @@ import rx.android.schedulers.AndroidSchedulers;
  *
  * @author zhangyunxiang Date 2021/1/26 15:28
  */
-public class DrawableTestActivity extends AppCompatActivity {
+public class DrawableTestAct extends AppCompatActivity {
   Subscription subscription;
 
   @Override

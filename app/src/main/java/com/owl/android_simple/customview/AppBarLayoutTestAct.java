@@ -16,7 +16,7 @@ import com.owl.android_simple.R;
  *
  * @author zhangyunxiang Date 2018/12/5 11:57
  */
-public class AppBarLayoutTestActivity extends AppCompatActivity
+public class AppBarLayoutTestAct extends AppCompatActivity
     implements AppBarLayout.OnOffsetChangedListener {
   /*
   1. CoordinatorLayout 是这个库的组织容器，一切基于 support design 扩展出来的特性都应该发生在 CoordinatorLayout 及它的子 View 体系中

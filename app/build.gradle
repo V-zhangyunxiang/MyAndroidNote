@@ -107,4 +107,6 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlin_coroutines"
+
+    implementation "com.google.code.gson:gson:2.8.8"
 }
