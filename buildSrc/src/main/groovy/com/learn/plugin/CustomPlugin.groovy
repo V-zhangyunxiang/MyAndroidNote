@@ -8,6 +8,6 @@ class CustomPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        println("this is CusPlugin")
+        println("this is buildSrc Plugin")
     }
 }

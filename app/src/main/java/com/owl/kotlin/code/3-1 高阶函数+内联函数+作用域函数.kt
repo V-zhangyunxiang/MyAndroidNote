@@ -20,7 +20,6 @@ import java.io.File
  *
  * 内联函数中，为了能让 lambda 间接调用，使用 crossinline 允许其被间接调用，但 lambda 就不允许直接 return 了，因为 return 会造成未知的不确定
  *
- *
  * 在对象的上下文中执行代码块，当对一个对象调用这样的函数并提供一个 lambda 表达式时，它会形成一个临时作用域
  * 在此作用域中，可以访问该对象而无需其名称。这些函数称为作用域函数
  *
@@ -32,47 +31,47 @@ import java.io.File
  * */
 
 class Person(var name: String, var age: Int) {
-    fun add() {}
-    fun mius() {}
+  fun add() {}
+  fun mius() {}
 }
 
 fun main() {
-    val person = Person("Jack", 22)
-    // 对一个对象实例调用多个方法
-    // with(receiver: T, block: T.() -> R) : R
-    val with: Unit = with(person) {
-        add()
-        mius()
-    }
+  val person = Person("Jack", 22)
+  // 对一个对象实例调用多个方法
+  // with(receiver: T, block: T.() -> R) : R
+  val with: Unit = with(person) {
+    add()
+    mius()
+  }
 
-    // T.let(block: (T) -> R) : R
-    person.let(::println)
+  // T.let(block: (T) -> R) : R
+  person.let(::println)
 
-    // T.run(block: T.() -> R) : R
-    val numbers = mutableListOf("one", "two", "three")
-    val countEndsWithE = numbers.run {
-        add("four")
-        add("five")
-        count { it.endsWith("e") }
-    }
-    println("There are $countEndsWithE elements that end with e.")
+  // T.run(block: T.() -> R) : R
+  val numbers = mutableListOf("one", "two", "three")
+  val run = numbers.run {
+    add("four")
+    add("five")
+    count { it.endsWith("e") }
+  }
+  println("There are $run elements that end with e.")
 
-    //T.apply(block: T.() -> Unit): T
-    val numberList = mutableListOf<Double>()
-    numberList.apply {
-        add(2.71)
-        add(3.14)
-        add(1.0)
-    }.sort()
+  //T.apply(block: T.() -> Unit): T
+  val numberList = mutableListOf<Double>()
+  val apply = numberList.apply {
+    add(2.71)
+    add(3.14)
+    add(1.0)
+  }.sort()
 
-    //T.also(block: (T) -> Unit): T
-    val person2 = person.also { p: Person ->
-        p.name = "kim"
-    }
+  //T.also(block: (T) -> Unit): T
+  val also = person.also { p: Person ->
+    p.name = "kim"
+  }
 
-    //block: (T) -> R : R
-    File("build.gradle").inputStream().reader().buffered()
-            .use { println(it.readLine()) }
+  //block: (T) -> R : R
+  File("build.gradle").inputStream().reader().buffered()
+    .use { println(it.readLine()) }
 }
 
 

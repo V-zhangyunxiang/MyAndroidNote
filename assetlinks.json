@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.zyx.testproject",
+    "sha256_cert_fingerprints":
+    ["61:50:60:15:46:DC:2A:38:AE:8F:A3:86:4B:B6:9E:01:1F:00:FC:10:64:39:05:39:AB:10:4E:4E:65:F9:EC:B4"]
+  }
+}]

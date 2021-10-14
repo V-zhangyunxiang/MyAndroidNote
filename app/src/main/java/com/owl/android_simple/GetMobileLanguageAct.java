@@ -3,8 +3,8 @@ package com.owl.android_simple;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import java.util.Locale;
 
 /**

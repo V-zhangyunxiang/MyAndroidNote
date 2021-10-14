@@ -2,8 +2,8 @@ package com.owl.android_simple.customview;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import com.owl.android_simple.R;
 import com.owl.android_simple.data.PieData;
 import com.owl.android_simple.view.CanvasView;

@@ -31,13 +31,13 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.graphics.drawable.PictureDrawable;
-import android.support.annotation.Nullable;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.Nullable;
 import com.owl.android_simple.R;
 import java.util.Locale;
 

@@ -1,4 +1,4 @@
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
@@ -13,7 +13,7 @@
   1. 指定绑定 AppBarLayout 内的内容
   2. 将 NestedScrollView 放在 AppBarLayout 下方
   -->
-  <android.support.v4.widget.NestedScrollView
+  <androidx.core.widget.NestedScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -24,7 +24,7 @@
       android:layout_height="match_parent"
       android:text="22222222222222222222222222222222" />
 
-  </android.support.v4.widget.NestedScrollView>
+  </androidx.core.widget.NestedScrollView>
 
   <!--
   AppBarLayout 默认是一个垂直的 linearLayout，它的直接子 View 需要设置 app:layout_scrollFlags
@@ -68,11 +68,11 @@
     Parallax 视差滚动：滚动的速度不同，造成的视觉差异效果,作用在 CollapsingToolbarLayout 中的子 View，滑动速度是正常的一半
     pin 固定某个 View：滑动时该 View 保持不动
    -->
-  <android.support.design.widget.AppBarLayout
+  <AppBarLayout
     android:layout_width="match_parent"
     android:layout_height="250dp">
 
-    <android.support.design.widget.CollapsingToolbarLayout
+    <com.google.android.material.appbar.CollapsingToolbarLayout
       android:layout_width="match_parent"
       android:layout_height="250dp"
       android:minHeight="150dp"
@@ -87,20 +87,20 @@
         android:scaleType="centerCrop"
         android:src="@drawable/wallhaven_doe" />
 
-      <android.support.v7.widget.Toolbar
+      <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         app:layout_collapseMode="pin"
         app:title="title"
         app:titleTextColor="#00ff00" />
-    </android.support.design.widget.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.CollapsingToolbarLayout>
 
-    <android.support.design.widget.TabLayout
+    <com.google.android.material.tabs.TabLayout
       android:layout_width="match_parent"
       android:layout_height="50dp"
       android:background="#ff00ff" />
 
-  </android.support.design.widget.AppBarLayout>
+  </AppBarLayout>
 
-</android.support.design.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

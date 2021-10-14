@@ -18,50 +18,49 @@ var a = 0
 var c = if (a == 3) 4 else 5
 
 fun Test() {
-    label@ when (a) {
-        0 -> c = 5
-        1 -> c = 10
-        else -> c = 20
+  label@ when (a) {
+    0 -> c = 5
+    1 -> c = 10
+    else -> c = 20
 
+  }
+
+  c = when (a) {
+    0 -> 5
+    1 -> 10
+    else -> 20
+  }
+
+  c = when {
+    a == 5 -> 6
+    a != 9 -> 2
+    else -> 20
+  }
+
+  c = try {
+    5
+  } catch (e: Exception) {
+    0
+  } finally {
+    // 此处的值不会影响表达式的结果
+  }
+
+  val items = listOf("apple", "banana", "kiwifruit")
+  var index = 0
+  while (index < items.size) {
+    println("item at $index is ${items[index]}")
+    index++
+  }
+
+  do {
+    val y = 3
+  } while (y != null) // y 在此处可见
+
+  fun foo() {
+    listOf(1, 2, 3, 4, 5).forEach {
+      if (it == 3) return@forEach // 局部返回到该 lambda 表达式的调用者，即 forEach 循环
+      print(it)
     }
-
-    c = when (a) {
-        0 -> 5
-        1 -> 10
-        else -> 20
-    }
-
-    c = when {
-        a == 5 -> 6
-        a != 9 -> 2
-        else -> 20
-    }
-
-    c = try {
-        5
-    } catch (e: Exception) {
-        e.printStackTrace()
-        0
-    } finally {
-        // 此处的值不会影响表达式的结果
-    }
-
-    val items = listOf("apple", "banana", "kiwifruit")
-    var index = 0
-    while (index < items.size) {
-        println("item at $index is ${items[index]}")
-        index++
-    }
-
-    do {
-        val y = 3
-    } while (y != null) // y 在此处可见
-
-    fun foo() {
-        listOf(1, 2, 3, 4, 5).forEach {
-            if (it == 3) return@forEach // 局部返回到该 lambda 表达式的调用者，即 forEach 循环
-            print(it)
-        }
-        print(" done with implicit label")
-    }
+    print(" done with implicit label")
+  }
 }

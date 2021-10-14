@@ -17,9 +17,25 @@
     tools:ignore="GoogleAppIndexingWarning">
 
     <activity android:name="com.owl.android_simple.RxJava2Act">
+
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+
+    <activity android:name="com.owl.android_simple.AppLinkAct">
+
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+          android:host="www.baidu.com"
+          android:scheme="http" />
+        <data android:scheme="https" />
       </intent-filter>
     </activity>
 

@@ -7,27 +7,27 @@ package com.owl.kotlin.code
  * 默认是嵌套类, 嵌套类不持有外部类的引用
  */
 class OutClass {
-    private var name: String = ""
-    fun add() {}
+  private var name: String = ""
+  fun add() {}
 
 
-    inner class InnerClass() {
-        fun min() {
-            add()
-            this@OutClass.add()
-            name
-            this@OutClass.name
-        }
+  inner class InnerClass() {
+    fun min() {
+      add()
+      this@OutClass.add()
+      name
+      this@OutClass.name
     }
+  }
 
-    class NestedClass {
-        fun getValue(): String {
-            //嵌套类不持有外部类的引用，必须通过外部类的对象访问
-            val outClass = OutClass()
-            outClass.add()
-            return outClass.name
-        }
+  class NestedClass {
+    fun getValue(): String {
+      //嵌套类不持有外部类的引用，必须通过外部类的对象访问
+      val outClass = OutClass()
+      outClass.add()
+      return outClass.name
     }
+  }
 }
 
 /**
@@ -37,13 +37,13 @@ class OutClass {
  */
 sealed class SealedClass {
 
-    class SonClass1 : SealedClass() {
+  class SonClass1 : SealedClass() {
 
-    }
+  }
 
-    object SonClass2 : SealedClass() {
+  object SonClass2 : SealedClass() {
 
-    }
+  }
 
 }
 
@@ -52,20 +52,19 @@ class SonClass3 : SealedClass() {
 }
 
 fun check(sealedClass: SealedClass): String =
-        when (sealedClass) {
-            is SealedClass.SonClass1 -> "1"
-            is SealedClass.SonClass2 -> "2"
-            is SonClass3 -> "3"
-            else -> ""
-        }
+  when (sealedClass) {
+    is SealedClass.SonClass1 -> "1"
+    is SealedClass.SonClass2 -> "2"
+    is SonClass3 -> "3"
+    else -> ""
+  }
 
 fun main() {
-    val nestedClass = OutClass.NestedClass()
+  val nestedClass = OutClass.NestedClass()
 
-    val outClass = OutClass()
-    val innerClass = outClass.InnerClass()
-
-    val sealedClass1 = SealedClass.SonClass1()
-    val sealedClass2 = SealedClass.SonClass2
-    val sealedClass3 = SonClass3()
+  val outClass = OutClass()
+  val innerClass = outClass.InnerClass()
+  val sealedClass1 = SealedClass.SonClass1()
+  val sealedClass2 = SealedClass.SonClass2
+  val sealedClass3 = SonClass3()
 }
