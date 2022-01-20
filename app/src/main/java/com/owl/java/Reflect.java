@@ -3,7 +3,6 @@ package com.owl.java;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class Reflect {
   /*
@@ -40,10 +39,10 @@ public class Reflect {
     System.out.println(obj2);
 
     // 得到方法
-    Method method = cla.getMethod("show", null); // getMethod(方法名,方法的参数类型,如int.class)
-    // Method method=claz.getDeclaredMethod("show", null);
-    method.setAccessible(true); // 设置可以访问,不然无法调用
-    method.invoke(obj2, null); // invoke(对象,给方法传的实参)
+    //    Method method = cla.getMethod("show", null); // getMethod(方法名,方法的参数类型,如int.class)
+    //    // Method method=claz.getDeclaredMethod("show", null);
+    //    method.setAccessible(true); // 设置可以访问,不然无法调用
+    //    method.invoke(obj2, null); // invoke(对象,给方法传的实参)
   }
 
   public static void getClass1() {

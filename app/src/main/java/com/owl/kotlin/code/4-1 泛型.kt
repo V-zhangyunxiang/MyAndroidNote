@@ -20,25 +20,25 @@ package com.owl.kotlin.code
  */
 open class Nil<out T> {
 
-    //泛型约束
-    fun <T : Comparable<T>> maxOf(a: T, b: T): T {
-        return if (a > b) a else b
-    }
+  //泛型约束
+  fun <T : Comparable<T>> maxOf(a: T, b: T): T {
+    return if (a > b) a else b
+  }
 
-    //多个泛型约束
-    fun <T> maxOf(a: T, b: T): Unit where T : Comparable<T>, T : () -> Unit {
-        if (a > b) a() else b()
-    }
-    
-    class Nil2<E> : Nil<E>() {
+  //多个泛型约束
+  fun <T> maxOf(a: T, b: T): Unit where T : Comparable<T>, T : () -> Unit {
+    if (a > b) a() else b()
+  }
 
-    }
+  class Nil2<E> : Nil<E>() {
 
-    inline fun <reified T> printIfTypeMatch(item: Any) {
-        if (item is T) {  // 👈 这里就不会在提示错误了
-            println(item)
-        }
+  }
+
+  inline fun <reified T> printIfTypeMatch(item: Any) {
+    if (item is T) {  // 这里就不会在提示错误了
+      println(item)
     }
+  }
 
 }
 

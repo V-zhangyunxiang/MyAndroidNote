@@ -40,12 +40,12 @@
   match_parent
     官方不推荐在 ConstraintLayout 中使用 match_parent，可以设置 0dp (MATCH_CONSTRAINT) 配合约束代替
     match_parent
-  宽高比
+  Ratio 宽高比
     当宽或高至少有一个尺寸被设置为 0dp 时，可以通过属性 layout_constraintDimensionRatio 设置宽高比
     在设置宽高比的值的时候，还可以在前面加 W 或 H，分别指定宽度或高度限制
     app:layout_constraintDimensionRatio="H,2:3" 指的是 宽:高=2:3
     app:layout_constraintDimensionRatio="W,2:3" 指的是 宽:高=2:3
-  链
+  chain 链
     如果两个或以上控件通过下图的方式约束在一起，就可以认为是他们是一条链
     3 个 TextView 相互约束，两端两个 TextView 分别与 parent 约束，成为一条链
     在链头中设置 layout_constraintHorizontal_chainStyle 来改变整条链的样式
@@ -62,7 +62,7 @@
     barrier：优化屏障约束
     chain：优化链约束
     dimensions：优化尺寸测量
-  屏障(适合用作动态宽高的场景)
+  Barrier 屏障(适合用作动态宽高的场景)
     假设有 3 个控件 ABC，C 在 AB 的右边，但是 AB 的宽是不固定的，这个时候 C 无论约束在 A 的右边或者 B 的
     右边都不对。当出现这种情况可以用 Barrier 来解决。Barrier 可以在多个控件的一侧建立一个屏障
     <android.support.constraint.Barrier
@@ -73,7 +73,7 @@
           app:constraint_referenced_ids="TextView1,TextView2" />
     app:barrierDirection 为屏障所在的位置，可设置的值有：bottom、end、left、right、start、top
     app:constraint_referenced_ids 为屏障引用的控件，可设置多个(用“,”隔开)
-  分组
+  Group 分组
     Group可以把多个控件归为一组，方便隐藏或显示一组控件，这些控件可以不在 Group 标签内
           <android.support.constraint.Group
           android:id="@+id/group"
@@ -81,7 +81,7 @@
           android:layout_height="wrap_content"
           android:visibility="invisible"
           app:constraint_referenced_ids="TextView1,TextView3" />
-  占位符
+  Placeholder 占位符
      新建一个 Placeholder 约束在屏幕的左上角，新建一个 TextView 约束在屏幕的右上角，在 Placeholder
      中设置 app:content="@+id/textview"，这时 TextView 会跑到屏幕的左上角
 
@@ -102,15 +102,14 @@
           android:textColor="#000000"
           app:layout_constraintRight_toRightOf="parent"
           app:layout_constraintTop_toTopOf="parent" />
-  GuideLine
-      辅助线，主要是帮助预览时完成布局的(不会显示在界面上，类似 tools)，在界面上点击时会切换不同的模式
+  GuideLine 辅助线
+      主要是帮助预览时完成布局的(不会显示在界面上，类似 tools)，在界面上点击时会切换不同的模式
       <android.support.constraint.Guideline
       android:id="@+id/guideline1"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:orientation="horizontal"
       app:layout_constraintGuide_begin="51dp" />
-
       android:orientation          方向
       layout_constraintGuide_begin 开始位置
       layout_constraintGuide_end   结束位置

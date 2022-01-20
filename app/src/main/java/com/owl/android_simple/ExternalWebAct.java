@@ -8,15 +8,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
+import com.owl.android_simple.view.VoiceEndFireProgressView;
 import java.util.List;
 
 public class ExternalWebAct extends AppCompatActivity {
+  private VoiceEndFireProgressView progressView;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     Log.i("zyx", "taskId=" + this.getTaskId());
+    progressView = findViewById(R.id.progress_bar);
+
+    progressView.setViewData(50);
   }
 
   public void click(View v) {

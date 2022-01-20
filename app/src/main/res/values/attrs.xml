@@ -1,21 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 自定义验证码输入框-->
-    <declare-styleable name="verificationCodeView">
-        <!--输入框的数量-->
-        <attr name="vcv_et_number" format="integer"/>
-        <!--输入类型-->
-        <attr name="vcv_et_inputType">
-            <enum name="number" value="0"/>
-            <enum name="numberPassword" value="1"/>
-        </attr>
-        <!--输入框文字颜色-->
-        <attr name="vcv_et_text_color" format="color|reference"/>
-        <!--输入框文字大小-->
-        <attr name="vcv_et_text_size" format="dimension|reference"/>
-        <!--输入框背景-->
-        <attr name="vcv_et_bg" format="reference"/>
-        <!--光标样式-->
-        <attr name="vcv_et_cursor" format="reference"/>
-    </declare-styleable>
+  /*
+  format 枚举
+  reference 引用某个资源的 id(res 资源)
+  string 字符串
+  dimension 尺寸值
+  color 颜色值
+  boolean 布尔值
+  integer 整型值
+  float 浮点值
+  fraction 百分数
+  enum 枚举值
+  flag 位或运算
+
+  属性定义时可以指定多种类型值 如 reference|dimension
+  */
+  <!-- 自定义验证码输入框-->
+  <declare-styleable name="verificationCodeView">
+    <!--输入框的数量-->
+    <attr name="vcv_et_number" format="integer" />
+    <!--输入类型-->
+    <attr name="vcv_et_inputType">
+      <enum name="number" value="0" />
+      <enum name="numberPassword" value="1" />
+    </attr>
+    <!--输入框文字颜色-->
+    <attr name="vcv_et_text_color" format="color|reference" />
+    <!--输入框文字大小-->
+    <attr name="vcv_et_text_size" format="dimension|reference" />
+    <!--输入框背景-->
+    <attr name="vcv_et_bg" format="reference" />
+    <!--光标样式-->
+    <attr name="vcv_et_cursor" format="reference" />
+  </declare-styleable>
+
+  <declare-styleable name="CanvasView">
+    <attr name="text" format="string" />
+    <attr name="textSize" format="dimension|reference" />
+  </declare-styleable>
 </resources>

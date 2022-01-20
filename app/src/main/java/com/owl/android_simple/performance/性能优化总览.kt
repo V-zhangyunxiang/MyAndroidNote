@@ -31,9 +31,9 @@ package com.owl.android_simple.performance
  *    数据必须掌握在自己手里
  *  Crash 平台
  *    bugly 为代表
- *     数据采集、上报率高
- *     Java、Native 崩溃采集
- *     项目初期建议接入
+ *    数据采集、上报率高
+ *    Java、Native 崩溃采集
+ *    项目初期建议接入
  *  APM 平台
  *    听云
  *      通用的性能解决方案，数据采集完善

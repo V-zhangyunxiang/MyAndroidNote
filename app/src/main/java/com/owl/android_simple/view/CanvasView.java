@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
@@ -34,6 +35,7 @@ import android.graphics.drawable.PictureDrawable;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -47,49 +49,76 @@ import java.util.Locale;
  * @author zhangyunxiang Date 2021/1/28 14:56
  */
 public class CanvasView extends View {
-
   private static final String TAG = "zyx";
-  // 创建 Paint 对象的时候，构造方法的参数里加一个 ANTI_ALIAS_FLAG 的 flag，就可以在初始化的时候就开启抗锯齿
   Paint mPaint = new Paint();
+  // Paint mPaint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
   Picture mPicture = new Picture();
-  int mWidth;
-  int mHeight;
+  private int mWidth;
+  private int mHeight;
+  private String mText;
+  private int mTextSize;
 
+  // 在 new CanvasView() 时调用
   public CanvasView(Context context) {
     super(context);
-    // initPaint();
+    initPaint();
   }
-
+  // 在 layout 文件声明时调用，View 的属性值来自 AttributeSet 的值
   public CanvasView(Context context, @Nullable AttributeSet attrs) {
     super(context, attrs);
+    TypedArray typedArray =
+        context.getTheme().obtainStyledAttributes(attrs, R.styleable.CanvasView, 0, 0);
+    try {
+      mText = typedArray.getString(R.styleable.CanvasView_text);
+      mText = typedArray.getString(R.styleable.CanvasView_textSize);
+    } finally {
+      typedArray.recycle();
+    }
     initPaint();
-    // initRecording();
+  }
+  // 提供了默认的 defStyleAttr 用于指定基本的属性，允许 View 有自己基础的风格，默认值 0
+  // 如 com.android.internal.R.attr.buttonStyle
+  public CanvasView(Context context, AttributeSet attrs, int defStyleAttr) {
+    super(context, attrs, defStyleAttr);
+  }
+  // 多了一种提供 View 默认属性的一种方式，代码中传入 R.style.XX 就可以了。默认值 0，这个参数只有 defStyleAttr 为 0 的时候才会生效
+  public CanvasView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    super(context, attrs, defStyleAttr, defStyleRes);
   }
 
+  /*
+   * 设置笔颜色
+   *
+   * 1.基础颜色-ColorFilter-Xfermode
+   *
+   * 2.直接设置颜色的 API 用来给图形和文字设置颜色
+   *
+   *   2.1 setColorFilter() 用来基于颜色进行过滤处理
+   *   2.2 setXfermode() 用来处理源图像和 View 已有内容的关系
+   */
   private void initPaint() {
     Log.i("zyx", "initPaint");
-    // 设置笔颜色
-    // 基础颜色-ColorFilter-Xfermode
-    // 直接设置颜色的 API 用来给图形和文字设置颜色
-    // setColorFilter() 用来基于颜色进行过滤处理
-    // setXfermode() 用来处理源图像和 View 已有内容的关系
+    // 五种颜色表示方法
     mPaint.setColor(Color.BLACK);
+    // Color.argb(127, 255, 0, 255);
+    // 0xff00ff00;
     // mPaint.setColor(Color.parseColor("#009688"));
+    // mPaint.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
     // 设置笔渲染模式
     // STROKE                //描边
     // FILL                  //填充
     // FILL_AND_STROKE       //描边加填充，表示会加上描边的宽度
-    mPaint.setStyle(Style.STROKE);
+    mPaint.setStyle(Style.FILL);
     // 描边宽度
-    mPaint.setStrokeWidth(0);
+    mPaint.setStrokeWidth(10);
     // 抗锯齿
     mPaint.setAntiAlias(true);
     // 设置文本字体大小
     mPaint.setTextSize(50);
     // 设置字体
     mPaint.setTypeface(Typeface.SERIF);
-    //    mPaint.setTypeface(
-    //        Typeface.createFromAsset(getContext().getAssets(), "futura_bold_italic_font.ttf"));
+    // mPaint.setTypeface(
+    //  Typeface.createFromAsset(getContext().getAssets(), "futura_bold_italic_font.ttf"));
     // 设置粗体
     mPaint.setFakeBoldText(false);
     // 设置文字对齐方式,该设置影响 drawText x 坐标的位置,x 根据对齐方式而定，默认是 left，指在文字的左边
@@ -111,10 +140,10 @@ public class CanvasView extends View {
     mPaint.getFontSpacing();
     // 获取 paint 的 FontMetrics
     FontMetrics fontMetrics = mPaint.getFontMetrics();
-    //    fontMetrics.top;
-    //    fontMetrics.ascent;
-    //    fontMetrics.descent;
-    //    fontMetrics.bottom;
+    // fontMetrics.top;
+    // fontMetrics.bottom;
+    // fontMetrics.ascent;
+    // fontMetrics.descent;
     // 抖动
     mPaint.setDither(true);
     // 双线性过滤
@@ -123,14 +152,397 @@ public class CanvasView extends View {
     // mPaint.reset();
     // 将目标 paint 属性复制到当前 paint 中
     // mPaint.set(new Paint());
-    // 批量设置 flags;相当于依次调用它们的 set 方法
+    // 批量设置 flags，相当于依次调用它们的 set 方法
     // mPaint.setFlags(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
   }
 
+  /**
+   * 定义: 测量 View 的大小
+   *
+   * <p>如果对 View 的宽高进行修改了，不要调用 super.onMeasure(widthMeasureSpec, heightMeasureSpec)，要调用
+   * setMeasuredDimension(widthSize,heightSize) 这个函数
+   *
+   * <p>MeasureSpec 一个 int 有 32 bit，将它的高 2 位用来代表测量模式 Mode，低 30 位用来代表数值大小 Size
+   *
+   * <p>MeasureSpec.EXACTLY 表示父控件已经确切的指定了子 View 的大小(数值或 match_parent)
+   *
+   * <p>MeasureSpec.AT_MOST 表示子 View 大小由自身内容决定，但不能超过父 View 大小(wrap_content)
+   *
+   * <p>MeasureSpec.UNSPECIFIED 默认值，父控件没有给子 View 任何限制，子 View 可以设置为任意大小
+   *
+   * <p>MeasureSpec.makeMeasureSpec(int size, int mode)) 将 Mode 和 Size 组合成一个 measureSpec 数值
+   *
+   * <p>public static int resolveSize(int size , int measureSpec) 系统提供判断测量模式的代码，size
+   * 表示你希望的宽或高，返回计算后的宽或高
+   *
+   * @param widthMeasureSpec
+   * @param heightMeasureSpec
+   */
+  @Override
+  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    //    // 父 View 推荐的宽高
+    //    int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+    //    int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+    //    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+    //    int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+    //    // 自身内容宽高
+    //    int contentW;
+    //    int contentH;
+    //    // resultW 最终设置的宽，resultH 最终设置的高
+    //    int resultW = widthSize;
+    //    int resultH = heightSize;
+    //
+    //    contentW = (int) mPaint.measureText(mText);
+    //    contentW += getPaddingLeft() + getPaddingRight();
+    //
+    //    contentH = mTextSize;
+    //    contentH += getPaddingTop() + getPaddingBottom();
+    //
+    //    if (widthMode == MeasureSpec.AT_MOST) {
+    //      if (!TextUtils.isEmpty(mText)) {
+    //        resultW = Math.min(contentW, widthSize);
+    //        resultH = Math.min(contentH, heightSize);
+    //      }
+    //    } else if (widthMode == MeasureSpec.EXACTLY) {
+    //      // 与默认值相同
+    //    } else {
+    //      resultW = contentW;
+    //      resultH = contentH;
+    //    }
+    //    setMeasuredDimension(resultW, resultH);
+    //
+    //    // measureViewGroup(widthMeasureSpec, heightMeasureSpec);
+  }
+
+  // ViewGroup 中的 onMeasure() 调用了 View.measure() 而 View.measure() 调用了 View.onMeasure()
+  private void measureViewGroup(int widthMeasureSpec, int heightMeasureSpec) {
+    // 父 View 推荐的宽高
+    int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+    int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+    int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+    // 自身内容宽高
+    int contentW;
+    int contentH;
+    // resultW 最终设置的宽，resultH 最终设置的高
+    int resultW = widthSize;
+    int resultH = heightSize;
+
+    contentW = getPaddingLeft() + getPaddingRight();
+    contentH = getPaddingTop() + getPaddingBottom();
+    // 下面的设置需要继承 ViewGroup
+    // 对子元素进行尺寸的测量
+    // measureChildren(widthMeasureSpec, heightMeasureSpec);
+    //    MarginLayoutParams layoutParams;
+    //    for (int i = 0; i < getChildCount(); i++) {
+    //      View child = getChildAt(i);
+    //      layoutParams = (MarginLayoutParams) child.getLayoutParams();
+    //      // 子元素不可见时，不参与布局，因此不需要将其尺寸计算在内
+    //      if (child.getVisibility() == View.GONE) {
+    //        continue;
+    //      }
+    //      contentW += child.getMeasuredWidth() + layoutParams.leftMargin +
+    // layoutParams.rightMargin;
+    //      contentH += child.getMeasuredHeight() + layoutParams.topMargin +
+    // layoutParams.bottomMargin;
+    //    }
+
+    if (widthMode == MeasureSpec.AT_MOST) {
+      if (!TextUtils.isEmpty(mText)) {
+        resultW = Math.min(contentW, widthSize);
+        resultH = Math.min(contentH, heightSize);
+      }
+    } else if (widthMode == MeasureSpec.EXACTLY) {
+      // 与默认值相同
+    } else {
+      resultW = contentW;
+      resultH = contentH;
+    }
+    setMeasuredDimension(resultW, resultH);
+  }
+
+  /**
+   * View 的大小不仅由 View 本身控制，而且受父控件的影响，所以我们在确定 View 大小的时候最好使用系统提供的 onSizeChanged 回调函数
+   *
+   * @param w 宽
+   * @param h 高
+   * @param oldw 上一次的宽
+   * @param oldh 上一次的高
+   */
+  @Override
+  protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    Log.i("zyx", "onSizeChanged");
+    super.onSizeChanged(w, h, oldw, oldh);
+    mWidth = w;
+    mHeight = h;
+  }
+
+  /**
+   * 定义: 确定子 View 布局位置
+   *
+   * @param changed
+   * @param left
+   * @param top
+   * @param right
+   * @param bottom
+   */
+  @Override
+  protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+    //    int topStart = getPaddingTop();
+    //    int leftStart = getPaddingLeft();
+    //    int childW;
+    //    int childH;
+    //    MarginLayoutParams layoutParams;
+    //    for (int i = 0; i < getChildCount(); i++) {
+    //      View child = getChildAt(i);
+    //      layoutParams = (MarginLayoutParams) child.getLayoutParams();
+    //
+    //      // 子元素不可见时，不参与布局，因此不需要将其尺寸计算在内
+    //      if (child.getVisibility() == View.GONE) {
+    //        continue;
+    //      }
+    //
+    //      childW = child.getMeasuredWidth();
+    //      childH = child.getMeasuredHeight();
+    //
+    //      leftStart += layoutParams.leftMargin;
+    //      topStart += layoutParams.topMargin;
+    //
+    //      // 确定子 View 位置
+    //      child.layout(leftStart, topStart, leftStart + childW, topStart + childH);
+    //      // 下一个 View 的左上角坐标
+    //      leftStart += childW + layoutParams.rightMargin;
+    //      topStart += childH + layoutParams.bottomMargin;
+    //    }
+  }
+
+  /**
+   * 定义: 绘制内容
+   *
+   * <p>Android 绘制都是按顺序的，先绘制的内容会被后绘制的内容覆盖
+   *
+   * <p>在继承已有控件的基础上添加绘制代码时，需要考虑代码的绘制顺序
+   *
+   * <p>1.背景(发生在 drawBackground 方法中，但此方法是 private 的，一般在 XML 或者 Java 代码中设置)
+   *
+   * <p>2.主体(onDraw)
+   *
+   * <p>3.子 View(dispatchDraw)
+   *
+   * <p>4.滑动条(XML 或者 setScrollBar 设置)
+   *
+   * <p>5 前景(XML 或者 setForeground 设置)
+   *
+   * <p>也可以重写 draw 方法，将绘制代码设置在 super.draw 前或者后
+   */
+  @Override
+  protected void onDraw(Canvas canvas) {
+    super.onDraw(canvas);
+    drawArc(canvas);
+  }
+
+  // 绘制子 View
+  @Override
+  protected void dispatchDraw(Canvas canvas) {
+    super.dispatchDraw(canvas);
+  }
+
+  // 绘制前景色
+  @Override
+  public void onDrawForeground(Canvas canvas) {
+    super.onDrawForeground(canvas);
+  }
+
+  // 绘制颜色
+  private void drawColor(Canvas canvas) {
+    canvas.drawColor(Color.BLUE);
+  }
+
+  // 绘制点
+  private void drawPoint(Canvas canvas) {
+    canvas.drawPoint(200, 200, mPaint);
+    // 绘制一组点，每 2 个组成一个点
+    canvas.drawPoints(new float[] {500, 500, 500, 600, 500, 700}, mPaint);
+  }
+
+  // 绘制一条直线
+  private void drawLine(Canvas canvas) {
+    canvas.drawLine(300, 300, 500, 600, mPaint);
+    // 绘制一组线，每 2 个点的坐标确定一条线
+    canvas.drawLines(new float[] {100, 200, 200, 200, 100, 300, 200, 300}, mPaint);
+  }
+
+  // 绘制矩形，左上角和右下角坐标确定矩形范围
+  // Rect 和 RectF 的区别: rect 是 int 的，rectF 是 float 的
+  private void drawRect(Canvas canvas) {
+    // 第一种
+    // canvas.drawRect(200, 500, 600, 700, mPaint);
+    // 第二种
+    Rect rect = new Rect();
+    rect.set(200, 500, 600, 700);
+    canvas.drawRect(rect, mPaint);
+  }
+
+  // 绘制圆角矩形
+  // 30,30 表示圆弧的两个半径，30,30 这个点到 X,Y 轴包围的范围就是圆弧的角度
+  private void drawRoundRect(Canvas canvas) {
+    // 第一种
+    canvas.drawRoundRect(100, 100, 800, 400, 30, 30, mPaint);
+    // 第二种
+    RectF rectF = new RectF(100, 100, 800, 400);
+    canvas.drawRoundRect(rectF, 30, 30, mPaint);
+  }
+
+  // 绘制椭圆
+  private void drawOval(Canvas canvas) {
+    // 第一种
+    canvas.drawOval(100, 100, 800, 400, mPaint);
+    // 第二种
+    RectF rectF = new RectF(100, 100, 700, 400);
+    canvas.drawOval(rectF, mPaint);
+  }
+
+  // 绘制圆
+  // cx(300)、cy(400) 表示圆心坐标，radius(200) 表示半径
+  private void drawCircle(Canvas canvas) {
+    canvas.drawCircle(300, 400, 200, mPaint);
+  }
+
+  // 绘制圆弧
+  // 顺时针旋转为正角度方向(sweepAngle取值范围是 [-360, 360) 度)，矩形的中心点为旋转起始点
+  // startAngle 开始角度，sweepAngle 扫过角度，userCenter 表示是否使用中心点。true 表示起点和终点同时与中心点相连的区域
+  // false 表示起点终点两者相连的区域
+  private void drawArc(Canvas canvas) {
+    // 例一
+    // 绘制背景矩形
+    RectF rectF = new RectF(100, 100, 800, 400);
+    mPaint.setColor(Color.GRAY);
+    canvas.drawRect(rectF, mPaint);
+    // 绘制圆弧
+    mPaint.setColor(Color.BLUE);
+    canvas.drawArc(rectF, 0, 90, false, mPaint);
+
+    // 例二
+    RectF rectF2 = new RectF(100, 600, 800, 900);
+    // 绘制背景矩形
+    mPaint.setColor(Color.GRAY);
+    canvas.drawRect(rectF2, mPaint);
+    // 绘制圆弧
+    mPaint.setColor(Color.BLUE);
+    canvas.drawArc(rectF2, 0, 90, true, mPaint);
+  }
+
+  // 所有的画布操作都只影响后续的绘制，对之前已经绘制过的内容没有影响
+
+  // 位移，将画布圆心移动到指定位置。位移是基于当前位置移动，而不是每次基于 View 左上角的 (0,0) 点移动
+  private void canvasTranslate(Canvas canvas) {
+    mPaint.setColor(Color.BLACK);
+    canvas.translate(200, 200);
+    canvas.drawCircle(0, 0, 100, mPaint);
+
+    mPaint.setColor(Color.BLUE);
+    canvas.translate(200, 200);
+    canvas.drawCircle(0, 0, 100, mPaint);
+  }
+
+  // 缩放，缩放的中心默认为 坐标原点(画布已经位移到布局中央)
+  // public void scale (float sx, float sy)
+  // public void scale (float sx, float sy, float px, float py)
+  // sx，sy 表示缩放比例，默认 1 无变化，>1 表示放大，小于 1 表示缩小；当缩放比例为负数时会根据缩放中心进行对折翻转
+  // px，py 表示缩放中心坐标
+  private void canvasScale(Canvas canvas) {
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
+    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
+    canvas.drawRect(rect, mPaint);
+
+    // 例一
+    // 先根据缩放中心(坐标原点)缩放到原来的 0.5 倍，然后分别按照 x 轴和 y 轴进行翻转
+    canvas.scale(-0.5f, -0.5f, 200, 0); // 画布缩放，缩放中心向右偏移了 200
+    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
+    canvas.drawRect(rect, mPaint);
+
+    // 例二
+    // 缩放也是可以叠加的，缩放比例相乘
+    mPaint.setStyle(Style.STROKE);
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect2 = new RectF(-400, -400, 400, 400); // 矩形区域
+    for (int i = 0; i <= 20; i++) {
+      canvas.scale(0.9f, 0.9f);
+      canvas.drawRect(rect2, mPaint);
+    }
+  }
+
+  // 旋转
+  // public void rotate (float degrees)
+  // public void rotate (float degrees, float px, float py)
+  // 默认的旋转中心 View 的坐标原点(画布已经位移到布局中央)
+  private void canvasRotate(Canvas canvas) {
+    // 示例一
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
+    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
+    canvas.drawRect(rect, mPaint);
+
+    canvas.rotate(180); // 旋转180度
+    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
+    canvas.drawRect(rect, mPaint);
+
+    // 示例二
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect2 = new RectF(0, -400, 400, 0); // 矩形区域
+    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
+    canvas.drawRect(rect, mPaint);
+
+    canvas.rotate(180, 200, 0); // 旋转180度 <-- 旋转中心向右偏移200个单位
+    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
+    canvas.drawRect(rect2, mPaint);
+
+    // 示例三
+    mPaint.setStyle(Style.STROKE);
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    canvas.drawCircle(0, 0, 400, mPaint); // 绘制两个圆形
+    canvas.drawCircle(0, 0, 380, mPaint);
+    for (int i = 0; i <= 360; i += 10) { // 绘制圆形之间的连接线
+      canvas.drawLine(0, 380, 0, 400, mPaint);
+      canvas.rotate(10);
+    }
+  }
+
+  // 错切(skew)，特殊类型的线性变换
+  // public void skew (float sx, float sy)
+  // sx 将画布在 x 方向倾斜相应的角度，sx 为倾斜角度的 tan 值
+  // sy 将画布在 y 方向倾斜相应的角度，sy 为倾斜角度的 tan 值
+  private void canvasSkew(Canvas canvas) {
+    canvas.translate(getWidth() / 2, getHeight() / 2);
+    RectF rect = new RectF(0, 0, 200, 200);
+    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
+    canvas.drawRect(rect, mPaint);
+
+    canvas.skew(1, 0); // 水平错切 <- 45度
+    mPaint.setStyle(Style.STROKE);
+    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
+    canvas.drawRect(rect, mPaint);
+  }
+
+  // 画布操作，通过 save + restore 组合避免对画布的操作影响之后的代码
+  private void saveRestore() {
+    //    save();      //保存状态
+    //    ...          //具体操作
+    //    restore();   //回滚到之前的状态
+  }
+
+  /**
+   * 设置线条形状
+   *
+   * <p>BUTT 平头、ROUND 圆头、SQUARE 方头。默认为 BUTT
+   *
+   * @param canvas
+   */
   public void setStrokeCap(Canvas canvas) {
     mPaint.setStrokeWidth(60);
-    // 设置线条形状
-    // BUTT 平头、ROUND 圆头、SQUARE 方头。默认为 BUTT
+
     mPaint.setStrokeCap(Cap.BUTT);
     canvas.drawLine(500, 700, 1000, 700, mPaint);
     mPaint.setStrokeCap(Cap.SQUARE);
@@ -139,6 +551,11 @@ public class CanvasView extends View {
     canvas.drawLine(500, 1100, 1000, 1100, mPaint);
   }
 
+  /**
+   * 设置拐角形状
+   *
+   * @param canvas
+   */
   public void setStrokeJoin(Canvas canvas) {
     // 设置拐角形状
     mPaint.setStrokeWidth(60);
@@ -163,8 +580,8 @@ public class CanvasView extends View {
    *
    * <p>DashPathEffect(虚线)
    *
-   * <p>PathDashPathEffect(Path shape, float advance, float phase, Style style)(使用一个 Path 来绘制虚线)
-   * shape 参与绘制的 path，advance两个相邻 shape 的距离(两个 shape 起点的距离) phase 虚线的偏移
+   * <p>PathDashPathEffect(Path shape, float advance, float phase, Style style) shape 参与绘制的
+   * path，advance两个相邻 shape 的距离(两个 shape 起点的距离) phase 虚线的偏移
    *
    * <p>style，是用来指定拐弯改变的时候 shape 的转换方式
    *
@@ -222,6 +639,8 @@ public class CanvasView extends View {
   /**
    * shader
    *
+   * <p>LinearGradient RadialGradient SweepGradient BitmapShader ComposeShader
+   *
    * @param canvas
    */
   public void drawBitmapShader(Canvas canvas) {
@@ -251,9 +670,9 @@ public class CanvasView extends View {
   /**
    * 获取文字的显示范围
    *
-   * <p>text 要显示的文字，start 和 end 分别是文字的起始和结束位置，bounds 是存储文字显示范围的对象，方法在测算完成之后会把结果写进 bounds
-   *
    * <p>getTextBounds(String text, int start, int end, Rect bounds)
+   *
+   * <p>text 要显示的文字; start 和 end 分别是文字的起始和结束位置; bounds 是存储文字显示范围的对象，方法在测算完成之后会把结果写进 bounds
    */
   public void getTextBounds(Canvas canvas) {
     String str = "Hello World";
@@ -283,106 +702,6 @@ public class CanvasView extends View {
   }
 
   /**
-   * MeasureSpec.UNSPECIFIED:子元素告诉父容器它希望它的宽高想要多大就要多大
-   *
-   * <p>MeasureSpec 将它的高 2 位用来代表测量模式 Mode，低 30 位用来代表数值大小 Size
-   *
-   * <p>MeasureSpec.EXACTLY :子元素是一个精确的数值
-   *
-   * <p>MeasureSpec.AT_MOST：子 View 希望它的宽或者高由自己决定，但不能超过父类提供的建议宽高
-   *
-   * <p>MeasureSpec.makeMeasureSpec():将 Mode 和 Size 组合成一个 measureSpec 数值
-   *
-   * <p>MeasureSpec.getMode()
-   *
-   * <p>MeasureSpec.getSize()
-   *
-   * <p>resolveSize()
-   *
-   * @param widthMeasureSpec
-   * @param heightMeasureSpec
-   */
-  @Override
-  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    // 父 View 推荐的宽高
-    int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-    int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-    int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-    int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-    // 我们希望的宽高
-    int hopeW;
-    int hopeH;
-    // resultW 代表最终设置的宽，resultH 代表最终设置的高
-    int resultW;
-    int resultH;
-
-    // View 模板代码，省略了 exactly 模式，高度同理
-    //    hopeW = (int) mPaint.measureText(mText);
-    //    hopeW += getPaddingLeft() + getPaddingRight();
-    //    hopeH = mTextSize + getPaddingTop() + getPaddingBottom();
-    //
-    //    // ViewGroup 模板代码
-    //    hopeW = getPaddingLeft() + getPaddingRight();
-    //    hopeH = getPaddingTop() + getPaddingBottom();
-    //    measureChildren(widthMeasureSpec, heightMeasureSpec);
-    //    MarginLayoutParams layoutParams;
-    //    for (int i = 0; i < getChildCount(); i++) {
-    //      View child = getChildAt(i);
-    //      layoutParams = (MarginLayoutParams) child.getLayoutParams();
-    //      // 子元素不可见时，不参与布局，因此不需要将其尺寸计算在内
-    //      if (child.getVisibility() == View.GONE) {
-    //        continue;
-    //      }
-    //      hopeW += child.getMeasuredWidth() + layoutParams.leftMargin + layoutParams.rightMargin;
-    //      hopeH += child.getMeasuredHeight() + layoutParams.topMargin + layoutParams.bottomMargin;
-    //    }
-
-    // 下面代码 View 和 ViewGroup 两者相同
-    //    if (widthMode == MeasureSpec.AT_MOST) {
-    //      if (!TextUtils.isEmpty(mText)) {
-    //        resultW = Math.min(hopeW, widthSize);
-    //      }
-    //    } else if (widthMode == MeasureSpec.EXACTLY) {
-    //      resultW = widthSize;
-    //    } else if (widthMode == MeasureSpec.UNSPECIFIED) {
-    //      resultW = hopeW;
-    //    }
-    // setMeasuredDimension(resultW, resultH);
-  }
-
-  @Override
-  protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    // ViewGroup 模板代码
-    //    int topStart = getPaddingTop();
-    //    int leftStart = getPaddingLeft();
-    //    int childW;
-    //    int childH;
-    //    MarginLayoutParams layoutParams = null;
-    //    for ( int i = 0;i < getChildCount();i++ ) {
-    //      View child = getChildAt(i);
-    //      layoutParams = (MarginLayoutParams) child.getLayoutParams();
-    //
-    //      //子元素不可见时，不参与布局，因此不需要将其尺寸计算在内
-    //      if ( child.getVisibility() == View.GONE ) {
-    //        continue;
-    //      }
-    //
-    //      childW = child.getMeasuredWidth();
-    //      childH = child.getMeasuredHeight();
-    //
-    //      leftStart += layoutParams.leftMargin;
-    //      topStart += layoutParams.topMargin;
-    //
-    //      // 确定子 View 位置
-    //      child.layout(leftStart,topStart, leftStart + childW, topStart + childH);
-    //
-    //      leftStart += childW + layoutParams.rightMargin;
-    //      topStart += childH + layoutParams.bottomMargin;
-    //    }
-  }
-
-  /**
    * 使用 Picture 前最好关闭硬件加速，以免引起不必要的问题；可以把 Picture 看作是一个录制 Canvas 操作的录像机
    *
    * <p>beginRecording 和 endRecording 是成对使用的,一个开始录制,一个是结束录制,两者之间的操作将会存储在 Picture 中, 并不会显示在屏幕中，在
@@ -392,7 +711,7 @@ public class CanvasView extends View {
    */
   private void initRecording() {
     Log.i("zyx", "initRecording");
-    // 开始录制 (接收返回值 Canvas)
+    // 开始录制
     // 此处设置的 width、height 对实际显示出来的图像并没有影响，mPicture.getWidth() 和 mPicture.getHeight() 拿到的就是
     // beginRecording 设置的宽高值，如果你并不使用，此处可以设置成任意值
     Canvas canvas = mPicture.beginRecording(0, 0);
@@ -400,7 +719,6 @@ public class CanvasView extends View {
     Paint paint = new Paint();
     paint.setColor(Color.BLUE);
     paint.setStyle(Paint.Style.FILL);
-    // 在 Canvas 中具体操作
     // 位移
     canvas.translate(250, 250);
     // 绘制一个圆
@@ -408,267 +726,13 @@ public class CanvasView extends View {
     mPicture.endRecording();
   }
 
-  @Override
-  protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-    Log.i("zyx", "onSizeChanged");
-    super.onSizeChanged(w, h, oldw, oldh);
-    mWidth = w;
-    mHeight = h;
-  }
-
-  /**
-   * Android 绘制都是按顺序的，先绘制的内容会被后绘制的内容覆盖
-   *
-   * <p>在继承已有控件的基础上添加绘制代码时，需要考虑代码的绘制顺序
-   *
-   * <p>当存在子 View 时，每一个 ViewGroup 会先调用自己的 onDraw() 来绘制完自己的主体之后再去绘制它的子 View
-   *
-   * <p>完整的绘制过程
-   *
-   * <p>1. 背景 ： 发生在 drawBackground 方法中，但此方法是 private 的，一般在 XML 或者 Java 代码中设置
-   *
-   * <p>2. 主体(onDraw)
-   *
-   * <p>3. 子 View(dispatchDraw)
-   *
-   * <p>4. 滑动边缘渐变和滑动条 XML 或者 setScrollBar 系列
-   *
-   * <p>5 前景(6.0 以上) XML 或者 setForeground 设置
-   *
-   * <p>也可以重写 draw 方法，将绘制代码设置在 super.draw 前或者后
-   */
-  @Override
-  protected void onDraw(Canvas canvas) {
-    super.onDraw(canvas);
-    camera(canvas);
-  }
-
-  // 绘制子 View
-  @Override
-  protected void dispatchDraw(Canvas canvas) {
-    super.dispatchDraw(canvas);
-  }
-
-  // 绘制滑动边缘渐变和滑动条、前景色
-  @Override
-  public void onDrawForeground(Canvas canvas) {
-    super.onDrawForeground(canvas);
-  }
-
-  /**
-   * 硬件加速 : 指把绘制 View 的计算工作交给 GPU 来处理
-   *
-   * <p>未开启硬件加速时，View 的绘制是由 CPU 将绘制内容通过 CPU 转换成像素信息再显示到屏幕上
-   *
-   * <p>开启硬件加速后，CPU 将绘制内容交给 GPU 操作，最终由 GPU 完成渲染工作
-   *
-   * <p>硬件加速的好处：1. GPU 相较于 CPU 对于图形计算有更大的优势 2. 绘制机制的不同，导致界面重绘时刷新效率极大提高(GPU 重绘时只更新需要更新的
-   * View，而关闭硬件加速后需要全部重绘)
-   *
-   * <p>硬件加速的弊端：canvas 的一些 API 在硬件加速下无法生效
-   */
-  private void hardwareSpeed() {
-    // LAYER_TYPE_SOFTWARE 软件加速，开启时会自动关闭硬件加速
-    // LAYER_TYPE_HARDWARE 硬件加速
-    // 离屏缓冲，开启硬件加速后，单独启用一块地方绘制该 View，绘制内容会被缓存下来，在进行移动、伸缩、旋转、透明等无需 invalidate
-    // 的属性动画时可以开启硬件加速来极大提高动画执行的效率, 不适用于基于自定义属性绘制的动画
-    setLayerType(LAYER_TYPE_HARDWARE, null);
-    ObjectAnimator animator = ObjectAnimator.ofFloat(this, "rotationY", 180);
-    animator.addListener(
-        new AnimatorListenerAdapter() {
-          @Override
-          public void onAnimationEnd(Animator animation) {
-            setLayerType(LAYER_TYPE_NONE, null);
-          }
-        });
-    animator.start();
-  }
-
-  /** 绘制颜色 */
-  private void drawColor(Canvas canvas) {
-    canvas.drawColor(Color.BLUE);
-  }
-
-  /** 绘制点 */
-  private void drawPoint(Canvas canvas) {
-    canvas.drawPoint(200, 200, mPaint);
-    canvas.drawPoints(new float[] {500, 500, 500, 600, 500, 700}, mPaint);
-  }
-
-  /** 绘制一条直线 */
-  private void drawLine(Canvas canvas) {
-    canvas.drawLine(300, 300, 500, 600, mPaint);
-    // 绘制一组线 每四数字(两个点的坐标)确定一条线
-    canvas.drawLines(new float[] {100, 200, 200, 200, 100, 300, 200, 300}, mPaint);
-  }
-
-  /** 绘制矩形 */
-  /** Rect 和 RectF 的区别：最大的区别是精度不同，rect 是 int 的，rectF 是 float 的 */
-  private void drawRect(Canvas canvas) {
-    // canvas.drawRect(200, 500, 600, 700, mPaint);
-
-    Rect rect = new Rect();
-    rect.set(200, 500, 600, 700);
-    canvas.drawRect(rect, mPaint);
-  }
-
-  /** 绘制圆角矩形,30,30 表示圆弧的两个半径，30,30 这个点到 X,Y 轴包围的范围就是圆弧的角度,当 X,Y 分别 >= 矩形的宽高一半时，圆角矩形会变成一个椭圆 */
-  private void drawRoundRect(Canvas canvas) {
-    // 第一种
-    RectF rectF = new RectF(100, 100, 800, 400);
-    canvas.drawRoundRect(rectF, 30, 30, mPaint);
-    // 第二种
-    canvas.drawRoundRect(100, 100, 800, 400, 360, 160, mPaint);
-  }
-
-  /** 绘制椭圆,实际上就是绘制一个矩形的内切图形,传递的 左上右下 实际是矩形的坐标; 如果长宽相等，就是一个圆 */
-  private void drawOval(Canvas canvas) {
-    // 第一种
-    RectF rectF = new RectF(100, 100, 700, 400);
-    canvas.drawOval(rectF, mPaint);
-    // 第二种
-    canvas.drawOval(100, 100, 800, 400, mPaint);
-  }
-
-  /** 绘制圆, cx、cy 表示圆心坐标,radius 表示半径 */
-  private void drawCircle(Canvas canvas) {
-    canvas.drawCircle(300, 400, 200, mPaint);
-  }
-
-  /**
-   * 绘制圆弧, 顺时针旋转为正角度方向(sweepAngle取值范围是 [-360, 360) 度)
-   *
-   * <p>在默认的屏幕坐标系中角度增大方向为顺时针
-   *
-   * <p>userCenter 表示是否使用中心点，如果使用，起点和终点会连向中心点，否则就只是起点和终点连线围起来的弧形
-   *
-   * <p>startAngle 开始角度 sweepAngle 扫过角度 useCenter 是否使用中心
-   */
-  private void drawArc(Canvas canvas) {
-    // 绘制背景矩形
-    RectF rectF = new RectF(100, 100, 800, 400);
-    mPaint.setColor(Color.GRAY);
-    canvas.drawRect(rectF, mPaint);
-    // 绘制圆弧
-    mPaint.setColor(Color.BLUE);
-    canvas.drawArc(rectF, 0, 90, false, mPaint);
-
-    RectF rectF2 = new RectF(100, 600, 800, 900);
-    // 绘制背景矩形
-    mPaint.setColor(Color.GRAY);
-    canvas.drawRect(rectF2, mPaint);
-    // 绘制圆弧
-    mPaint.setColor(Color.BLUE);
-    canvas.drawArc(rectF2, 0, 90, true, mPaint);
-  }
-
-  /** 画布操作. 所有的画布操作都只影响后续的绘制，对之前已经绘制过的内容没有影响 */
-
-  /** 位移，将画布圆心移动到指定位置。位移是基于当前位置移动,而不是每次基于屏幕左上角的 (0,0) 点移动 */
-  private void canvasTranslate(Canvas canvas) {
-    mPaint.setColor(Color.BLACK);
-    canvas.translate(200, 200);
-    canvas.drawCircle(0, 0, 100, mPaint);
-
-    mPaint.setColor(Color.BLUE);
-    canvas.translate(200, 200);
-    canvas.drawCircle(0, 0, 100, mPaint);
-  }
-
-  /** 缩放，缩放的中心默认为坐标原点,而缩放中心轴就是坐标轴; 当缩放比例为负数的时候会根据缩放中心轴进行翻转(可以看做是对折) */
-  private void canvasScale(Canvas canvas) {
-    canvas.translate(getWidth() / 2, getHeight() / 2);
-    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
-    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
-    canvas.drawRect(rect, mPaint);
-
-    // 先根据缩放中心(坐标原点)缩放到原来的 0.5 倍，然后分别按照 x 轴和 y 轴进行翻转
-    canvas.scale(-0.5f, -0.5f, 200, 0); // 画布缩放  <-- 缩放中心向右偏移了200个单位,中心轴也向右移动了
-    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
-    canvas.drawRect(rect, mPaint);
-
-    // 缩放也是可以叠加的，缩放比例相乘
-    mPaint.setStyle(Style.STROKE);
-    canvas.translate(getWidth() / 2, getHeight() / 2);
-    RectF rect2 = new RectF(-400, -400, 400, 400); // 矩形区域
-    for (int i = 0; i <= 20; i++) {
-      canvas.scale(0.9f, 0.9f);
-      canvas.drawRect(rect2, mPaint);
-    }
-  }
-
-  /** 旋转:默认的旋转中心依旧是坐标原点; 旋转角度也是可以叠加的(相加) */
-  private void canvasRotate(Canvas canvas) {
-    // 示例一
-    canvas.translate(getWidth() / 2, getHeight() / 2);
-    RectF rect = new RectF(0, -400, 400, 0); // 矩形区域
-    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
-    canvas.drawRect(rect, mPaint);
-
-    canvas.rotate(180); // 旋转180度 <-- 默认旋转中心为原点
-    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
-    canvas.drawRect(rect, mPaint);
-
-    // 示例二
-    canvas.translate(getWidth() / 2, getHeight() / 2);
-    RectF rect2 = new RectF(0, -400, 400, 0); // 矩形区域
-    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
-    canvas.drawRect(rect, mPaint);
-
-    canvas.rotate(180, 200, 0); // 旋转180度 <-- 旋转中心向右偏移200个单位
-    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
-    canvas.drawRect(rect2, mPaint);
-
-    // 示例三
-    mPaint.setStyle(Style.STROKE);
-    canvas.translate(getWidth() / 2, getHeight() / 2);
-    canvas.drawCircle(0, 0, 400, mPaint); // 绘制两个圆形
-    canvas.drawCircle(0, 0, 380, mPaint);
-    for (int i = 0; i <= 360; i += 10) { // 绘制圆形之间的连接线
-      canvas.drawLine(0, 380, 0, 400, mPaint);
-      canvas.rotate(10);
-    }
-  }
-
-  /** 错切(skew)，特殊类型的线性变换 */
-  private void canvasSkew(Canvas canvas) {
-    canvas.translate(getWidth() / 2, getHeight() / 2);
-    RectF rect = new RectF(0, 0, 200, 200); // 矩形区域
-    mPaint.setColor(Color.BLACK); // 绘制黑色矩形
-    canvas.drawRect(rect, mPaint);
-    /** float sx, float sy ; sx x 方向上倾斜角度的 tan 值，sy 是 y 轴上的 tan 值 */
-    canvas.skew(1, 0); // 水平错切 <- 45度
-    mPaint.setStyle(Style.STROKE);
-    mPaint.setColor(Color.BLUE); // 绘制蓝色矩形
-    canvas.drawRect(rect, mPaint);
-  }
-
-  // 上面针对画布的操作，一般都需要配合下面的组合使用,避免对后面的代码产生影响
-  private void saveRestore() {
-    // restore
-    // 状态回滚，就是从栈顶取出一个状态然后根据内容进行恢复，调用一次 restore 方法则将状态栈中第5次取出，根据里面保存的状态进行状态恢复
-    // restoreToCount
-    // 弹出指定位置以及以上所有状态，并根据指定位置状态进行恢复
-    // 以上面状态栈图片为例，如果调用restoreToCount(2) 则会弹出 2 3 4 5 的状态，并根据第 2 次保存的状态进行恢复
-    // getSaveCount
-    // 获取保存的次数，即状态栈中保存状态的数量，以上面状态栈图片为例，使用该函数的返回值为 5
-    // 不过需要注意，该函数的最小返回值为 1，即使弹出了所有的状态，返回值依旧为 1，代表默认状态
-
-    //    save();      //保存状态
-    //    ...          //具体操作
-    //    restore();   //回滚到之前的状态
-  }
-
   private void drawPicture(Canvas canvas) {
     // 让存储在 picture 中的 canvas 绘制出来，有 3 种方法
-
     // 1.调用 mPicture.draw(canvas); 会影响Canvas的状态
     mPicture.draw(canvas);
-
     // 2.canvas.drawPicture 使用 Canvas 提供的 drawPicture 方法绘制
     canvas.drawPicture(mPicture);
     canvas.drawPicture(mPicture, new RectF(0, 0, 50, 200)); // 该处 rect 暂时不清楚作用
-
     // 3.将 Picture 包装成为 PictureDrawable，使用 PictureDrawable 的 draw 方法绘制
     PictureDrawable drawable = new PictureDrawable(mPicture);
     // 设置绘制区域,图形超出部分会被忽略
@@ -1082,5 +1146,34 @@ public class CanvasView extends View {
 
   public void doCamera() {
     invalidate();
+  }
+
+  /**
+   * 硬件加速 : 指把绘制 View 的计算工作交给 GPU 来处理
+   *
+   * <p>未开启硬件加速时，View 的绘制是由 CPU 将绘制内容通过 CPU 转换成像素信息再显示到屏幕上
+   *
+   * <p>开启硬件加速后，CPU 将绘制内容交给 GPU 操作，最终由 GPU 完成渲染工作
+   *
+   * <p>硬件加速的好处：1. GPU 相较于 CPU 对于图形计算有更大的优势 2. 绘制机制的不同，导致界面重绘时刷新效率极大提高(GPU 重绘时只更新需要更新的
+   * View，而关闭硬件加速后需要全部重绘)
+   *
+   * <p>硬件加速的弊端：canvas 的一些 API 在硬件加速下无法生效
+   */
+  private void hardwareSpeed() {
+    // LAYER_TYPE_SOFTWARE 软件加速，开启时会自动关闭硬件加速
+    // LAYER_TYPE_HARDWARE 硬件加速
+    // 离屏缓冲，开启硬件加速后，单独启用一块地方绘制该 View，绘制内容会被缓存下来，在进行移动、伸缩、旋转、透明等无需 invalidate
+    // 的属性动画时可以开启硬件加速来极大提高动画执行的效率, 不适用于基于自定义属性绘制的动画
+    setLayerType(LAYER_TYPE_HARDWARE, null);
+    ObjectAnimator animator = ObjectAnimator.ofFloat(this, "rotationY", 180);
+    animator.addListener(
+        new AnimatorListenerAdapter() {
+          @Override
+          public void onAnimationEnd(Animator animation) {
+            setLayerType(LAYER_TYPE_NONE, null);
+          }
+        });
+    animator.start();
   }
 }
