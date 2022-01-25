@@ -35,8 +35,8 @@ public class DrawableTestAct extends AppCompatActivity {
     setContentView(R.layout.drawable_test_main);
     // setBitmapDrawable();
     // setClipDrawable();
+    // setLayerListDrawable();
     // ShapeDrawable 常用 XML 声明
-    setLayerListDrawable();
   }
 
   public void setBitmapDrawable() {

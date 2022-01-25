@@ -40,7 +40,6 @@ public class CustomViewTestAct extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.custom_main_test);
     CanvasView canvasView = findViewById(R.id.canvas_view);
-    findViewById(R.id.button).setOnClickListener(v -> canvasView.doCamera());
   }
 
   // 绘制饼状图
