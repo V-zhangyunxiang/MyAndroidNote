@@ -10,9 +10,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.BlurMaskFilter;
 import android.graphics.BlurMaskFilter.Blur;
-import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ComposeShader;
 import android.graphics.CornerPathEffect;
 import android.graphics.DashPathEffect;
 import android.graphics.DiscretePathEffect;
@@ -28,6 +28,8 @@ import android.graphics.Path;
 import android.graphics.Path.Direction;
 import android.graphics.PathEffect;
 import android.graphics.Picture;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -35,6 +37,7 @@ import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
 import android.graphics.SweepGradient;
 import android.graphics.Typeface;
+import android.graphics.Xfermode;
 import android.graphics.drawable.PictureDrawable;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
@@ -97,8 +100,8 @@ public class CanvasView extends View {
    *
    * 2.直接设置颜色的 API 用来给图形和文字设置颜色
    *
-   *   2.1 setColorFilter() 用来基于颜色进行过滤处理
-   *   2.2 setXfermode() 用来处理源图像和 View 已有内容的关系
+   *   2.1 mPaint.setColorFilter() 用来基于颜色进行过滤处理
+   *   2.2 mPaint.setXfermode() 用来处理源图像和 View 已有内容的关系
    */
   private void initPaint() {
     Log.i("zyx", "initPaint");
@@ -148,9 +151,9 @@ public class CanvasView extends View {
     // fontMetrics.bottom;
     // fontMetrics.ascent;
     // fontMetrics.descent;
-    // 抖动
+    // 抖动，用来优化色彩深度降低时的绘制效果
     mPaint.setDither(true);
-    // 双线性过滤
+    // 双线性过滤，用来优化 Bitmap 放大绘制时的效果
     mPaint.setFilterBitmap(true);
     // 重置 paint 的所有属性
     // mPaint.reset();
@@ -233,8 +236,10 @@ public class CanvasView extends View {
     int resultW = widthSize;
     int resultH = heightSize;
 
+    // 计算尺寸的时候要将自身的 padding 考虑进去
     contentW = getPaddingLeft() + getPaddingRight();
     contentH = getPaddingTop() + getPaddingBottom();
+
     // 下面的设置需要继承 ViewGroup
     // 对子元素进行尺寸的测量
     // measureChildren(widthMeasureSpec, heightMeasureSpec);
@@ -349,7 +354,7 @@ public class CanvasView extends View {
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    drawPathAddArc(canvas);
+    clipRect(canvas);
   }
 
   // 绘制子 View
@@ -607,13 +612,15 @@ public class CanvasView extends View {
     // public void drawBitmap (Bitmap bitmap, float left, float top, Paint paint);
     canvas.drawBitmap(bitmap, 20, 30, new Paint());
 
-    // 第三种，Rect src 指定绘制图片的区域，Rect dst 指定图片在屏幕上显示(绘制)的区域
+    // 第三种，Rect src 指定绘制图片的区域，Rect dst 指定图片在屏幕上展示的范围
     // 直白的解释，就是可自定义图片的一部分展示在特定区域，根据显示区域大小图片会自动缩放
     // public void drawBitmap (Bitmap bitmap, Rect src, Rect dst, Paint paint);
+
     // 显示图片左上角的四分之一
     Rect src1 = new Rect(0, 0, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
     // 显示图片的全部
     Rect src2 = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+
     // 设置图片在屏幕上的显示区域
     Rect dst = new Rect(0, mHeight / 2, mWidth, mHeight);
     // 绘制图片
@@ -761,26 +768,28 @@ public class CanvasView extends View {
   }
 
   /*
-  * 在绘制之前修改几何路径，它可以实现划线，自定义填充效果和自定义笔触效果
+  * 使用 PathEffect 来给图形的 轮廓 设置效果
   *
-  * CornerPathEffect   圆角效果，将尖角替换为圆角，CornerPathEffect 可以让手绘轨迹更加圆润
+  * CornerPathEffect(float radius)  圆角效果，将尖角替换为圆角，CornerPathEffect 可以让手绘轨迹更加圆润
+  *  radius 圆角半径
   *
   * DashPathEffect(float intervals[], float phase) 虚线效果，用于各种虚线效果
-  * intervals[] 用于控制虚线显示长度和隐藏长度，它必须为偶数(且至少为 2 个)，按照[显示长度，隐藏长度，显示长度，隐藏长度]的顺序来显示
-  * phase 偏移量，控制第一条线（实线）向左偏移的长度
+  *  intervals[] 用于控制虚线显示长度和隐藏长度，它必须为偶数(且至少为 2 个)，按照[显示长度，隐藏长度，显示长度，隐藏长度]的顺序来显示
+  *  phase 偏移量，控制第一条线（实线）向左偏移的长度
   *
   * DiscretePathEffect(float segmentLength, float deviation) 让路径分段随机偏移
-  * segmentLength 分段长度
-  * deviation     偏移距离
+  *  segmentLength 分段长度
+  *  deviation     偏移距离
   *
-  * PathDashPathEffect(Path shape, float advance, float phase, Style style) Path 虚线效果，虚线中的间隔使用 Path 代替
+  * PathDashPathEffect(Path shape, float advance, float phase, Style style) Path 规则的虚线效果
 
   * SumPathEffect     两个 PathEffect 效果组合，同时绘制两种效果
 
-    ComposePathEffect 两个 PathEffect 效果叠加，先使用效果 1，之后使用效果 2，有先后顺序
+    ComposePathEffect(PathEffect outerpe, PathEffect innerpe)
+     两个 PathEffect 效果叠加。innerpe 是先应用的， outerpe 是后应用的
   */
   public void setCornerPathEffect(Canvas canvas) {
-    PathEffect cornerPathEffect = new CornerPathEffect(20); // 20 指圆角的半径
+    PathEffect cornerPathEffect = new CornerPathEffect(20);
     PathEffect dashPathEffect = new DashPathEffect(new float[] {10, 10, 20, 10}, 0);
     PathEffect discretePathEffect = new DiscretePathEffect(10, 30);
 
@@ -794,7 +803,8 @@ public class CanvasView extends View {
   }
 
   /*
-   图片背后添加阴影
+   绘制内容下方添加一层阴影
+
    setShadowLayer(float radius, float dx, float dy, @ColorInt int shadowColor)
    radius 模糊半径，越大越模糊，越小越清晰，默认 0
    dx     阴影的横向偏移距离，正值向右偏移，负值向左偏移
@@ -810,7 +820,7 @@ public class CanvasView extends View {
   }
 
   /*
-   * 在绘制层上方的附加效果
+   * 绘制内容上方附加效果
    *
    * MaskFilter 有两种： BlurMaskFilter 和 EmbossMaskFilter
    *
@@ -830,15 +840,20 @@ public class CanvasView extends View {
   }
 
   // shader 着色器，它在图形绘制过程中返回一段段颜色值，通过调用 Paint.setShader() 方法，可以将它的子类安装进画笔
+  // 在设置了 Shader 的情况下，Paint.setColor/ARGB() 所设置的颜色就不再起作用
   /*
-  * BitmapShader 图片渲染器
-  *   BitmapShader (Bitmap bitmap, Shader.TileMode tileX, Shader.TileMode tileY)
-  *   bitmap 纹理图片，tileX X 方向轴的 tiling mode，tileY Y方向轴的 tiling mode
-  *   Shader.TileMode CLAMP
+  * BitmapShader 图片渲染器，用图片来填充图形、文字，如圆形头像
+  *
+  * BitmapShader (Bitmap bitmap, Shader.TileMode tileX, Shader.TileMode tileY)
+  *   bitmap 纹理图片
+  *   tileX X 方向轴的 tiling mode
+  *   tileY Y方向轴的 tiling mode
+  *   Shader.TileMode
+  *      CLAMP
   *      贴图的纹理本身小于要绘制的区域，那么超出部分将会以边缘的颜色填充
-      Shader.TileMode MIRROR
+         MIRROR
          以镜像的方式在 X 和 Y 方向复制
-      Shader.TileMode REPEAT
+         REPEAT
          将图片纹理沿 X、Y 轴进行复制
   */
   private void drawBitmapShader(Canvas canvas) {
@@ -849,7 +864,7 @@ public class CanvasView extends View {
     canvas.drawCircle(mWidth / 2, mHeight / 2, radius, mPaint);
   }
 
-  // shader 与文字混合，像是文字贴到了文字上
+  // shader 与文字混合，像是图片贴到了文字上
   private void drawBitmapShaderAndText(Canvas canvas) {
     Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.diqiu);
     Shader bitmapShader = new BitmapShader(bmp, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
@@ -923,7 +938,7 @@ public class CanvasView extends View {
     canvas.drawRect(0, 0, getWidth(), getHeight() / 2, mPaint);
   }
   /*
-    RadialGradient 环行渲染器，由中心向四周辐射
+    RadialGradient 辐射渐变
     RadialGradient (float centerX,
                 float centerY,
                 float radius,
@@ -961,7 +976,7 @@ public class CanvasView extends View {
   }
 
   /*
-  * SweepGradient 扫描渐变
+  * SweepGradient 扫描渐变，从 x 轴出发，以逆时钟为方向，以扫描 360 度形成的区域
   * SweepGradient (float cx,
                float cy,
                int color0,
@@ -982,7 +997,50 @@ public class CanvasView extends View {
     mPaint.setShader(sweepGradient);
     canvas.drawRect(0, 0, w, h, mPaint);
   }
-  //  ComposeShader composeShader = new ComposeShader(); 组合两个 shader 样式，通过 Xfermode 规则组合到一起
+  /*
+  * ComposeShader (Shader shaderA,
+               Shader shaderB,
+               Xfermode mode)
+
+    ComposeShader (Shader shaderA,
+                Shader shaderB,
+                PorterDuff.Mode mode)
+  * 组合两个 shader 样式，通过 Xfermode 规则组合到一起，先绘制的为目标图，后绘制的为源图
+  */
+  private void drawComposeShader(Canvas canvas) {
+    int w = getWidth();
+    int h = getHeight();
+    int radius = w <= h ? w / 2 : h / 2;
+
+    Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.diqiu);
+    Bitmap result = Bitmap.createScaledBitmap(bmp, w, h, false);
+
+    BitmapShader bitmapShader =
+        new BitmapShader(result, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+
+    RadialGradient radialGradient =
+        new RadialGradient(
+            radius, radius, radius, Color.BLACK, Color.TRANSPARENT, Shader.TileMode.CLAMP);
+
+    ComposeShader composeShader =
+        new ComposeShader(
+            bitmapShader, radialGradient, new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+
+    mPaint.setShader(composeShader);
+    canvas.drawCircle(w / 2, h / 2, radius, mPaint);
+  }
+
+  private void setXferMode(Canvas canvas) {
+    Xfermode xfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
+    // 使用离屏缓冲，把要绘制的内容单独绘制在缓冲层
+    int saved = canvas.saveLayer(null, null, Canvas.ALL_SAVE_FLAG);
+    canvas.drawCircle(getWidth() / 2, getHeight() / 2, 200, mPaint);
+    // 设置 Xfermode
+    mPaint.setXfermode(xfermode);
+    canvas.drawRect(new RectF(100, 100, 500, 500), mPaint); // 画圆
+    mPaint.setXfermode(null); // 用完及时清除 Xfermode
+    canvas.restoreToCount(saved);
+  }
 
   /* path 路径
       使用 Path 不仅能够绘制简单图形，也可以制比较复杂的图形
@@ -1086,107 +1144,41 @@ public class CanvasView extends View {
   }
 
   /*
-   * 范围裁剪
+   * 范围裁剪，裁切方法之后的绘制代码，都会被限制在裁切范围内
    *
    * clipRect() 裁剪一个矩形范围
    *
    * clipPath() 裁剪任意形状
    */
-  private void clipPath(Canvas canvas) {
+  private void clipRect(Canvas canvas) {
+    canvas.save();
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
+    canvas.clipRect(0, 0, getWidth() / 2 / 2, getHeight() / 2 / 2);
+    canvas.drawBitmap(bitmap, 200, 200, mPaint);
+    canvas.restore();
+  }
 
-    // canvas.clipRect(0, 0, getWidth() / 2 / 2, getHeight() / 2 / 2);
-    // canvas.drawBitmap(bitmap, 0, 0, mPaint);
-
+  private void clipPath(Canvas canvas) {
     Path path = new Path();
+    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
     path.addCircle(getWidth() / 2, getHeight() / 2, 500, Path.Direction.CW);
     canvas.clipPath(path);
-    canvas.drawBitmap(bitmap, 0, 0, mPaint);
+    canvas.drawBitmap(bitmap, 200, 200, mPaint);
   }
 
   /*
-   * 布尔运算：用一些简单的图形通过一些规则合成一些相对比较复杂，或难以直接得到的图形
-   *
-   * DIFFERENCE：Path1 中减去 Path2 后剩下的部分
-   *
-   * INTERSECT：Path1 与 Path2 相交的部分
-   *
-   * UNION：包含全部 Path1 和 Path2 全部
-   *
-   * XOR：包含 Path1 与 Path2 但不包括两者相交的部分
-   */
-  private void booleanCompute(Canvas canvas) {
-    canvas.translate(getWidth() / 2, getHeight() / 2);
-
-    Path path1 = new Path();
-    Path path2 = new Path();
-    Path path3 = new Path();
-    Path path4 = new Path();
-
-    path1.addCircle(0, 0, 200, Path.Direction.CW);
-    path2.addRect(0, -200, 200, 200, Path.Direction.CW);
-    path3.addCircle(0, -100, 100, Path.Direction.CW);
-    path4.addCircle(0, 100, 100, Path.Direction.CCW);
-
-    path1.op(path2, Path.Op.DIFFERENCE);
-    path1.op(path3, Path.Op.UNION);
-    path1.op(path4, Path.Op.DIFFERENCE);
-
-    canvas.drawPath(path1, mPaint);
-  }
-
-  // matrix 矩阵 ：使用 Matrix 来做常见变换
-  // 创建 Matrix 对象 - 调用 Matrix 的 pre/postTranslate/Rotate/Scale/Skew() 方法来设置几何变换 - 使用
-  // Canvas.setMatrix(matrix) 或 Canvas.concat(matrix) 来把几何变换应用到 Canvas
+    matrix 矩阵 ：使用 Matrix 来做常见变换
+     1.创建 Matrix 对象
+     2.调用 Matrix 的 post Translate/Rotate/Scale/Skew() 方法来设置几何变换
+     3. Canvas.setMatrix(matrix) 或 Canvas.concat(matrix) 来把几何变换应用到 Canvas
+  */
   private void matrixBase() {
-    /*
-     什么是矩阵？
-      一个由 m 行 n 列元素排列成的矩形阵列。矩阵里的元素可以是数字、符号或数学式
-    矩阵的加减乘操作？
-      1. 大小相同（行数列数都相同）的矩阵之间可以相互加减的，具体是对每个位置上的元素做加减法
-      2. 数乘是所有位置都乘以这个数
-      3. 矩阵相乘是第一个矩阵第 m 行与第二个矩阵第 n 列，对应位置的每个值的乘积之和
-    为什么相乘是这样的规则？
-      矩阵的本质就是线性方程式，两者是一一对应关系，方程组的简化记法
-    matrix 为什么是 3*3 的矩阵
-      平移是矩阵相加，旋转和缩放则是矩阵相乘，引入齐次坐标，将平移的加法合并用乘法表示，统一计算方式，方便计算和降低运算量
-    什么是齐次坐标
-      n 维的向量用一个 n+1 维向量来表示
-    matrix 矩阵中元素的作用
-     MTRANS_X、MTRANS_Y 同时控制着 Translate
-     MSCALE_X、MSCALE_Y 同时控制着 Scale
-     MSCALE_X、MSKEW_X、MSCALE_Y、MSKEW_Y 同时控制着 Rotate
-     MSKEW_X、MSKEW_Y 同时控制着 Skew
-    set、pre、post 的区别
-     分别代表设置、前乘、后乘变换；set 先清空前面的再设置；混合使用时 pre 先于 set 执行、post 后于 set 执行，建议是只使用一种乘法
-    */
     Matrix matrix = new Matrix(); // 创建一个单位矩阵
-    matrix.equals(new Matrix());
-    matrix.hashCode();
-    matrix.toString(); // 将 Matrix 转换为字符串
-    matrix.toShortString(); // 将 Matrix 转换为短字符串
     matrix.set(new Matrix()); // 将参数 Matrix 的数值复制到当前 Matrix 中
     matrix.reset(); // 重置当前 Matrix(将当前 Matrix 重置为单位矩阵)
-    matrix.setValues(new float[] {}); // 参数是浮点型的一维数组，长度需要大于 9，拷贝数组中的前 9 位数值赋值给当前 Matrix
-    matrix.getValues(new float[] {}); // 将 Matrix 中的数值拷贝进参数的前 9 位中
-    // map 系列用于数值计算，返回变换后的数值
-    // 初始数据为 3 个点 (0, 0) (80, 100) (400, 300)
-    float[] pts = new float[] {0, 0, 80, 100, 400, 300};
-    matrix.setScale(0.5f, 1f);
-    matrix.mapPoints(pts); // 数组作为参数传递原始数值，计算结果仍存放在 pts 数组中
-
-    float[] dst = new float[6];
-    matrix.mapPoints(dst, pts); // pts 作为参数传递原始数值，计算结果存放在 dst 中，pts 不变; 原始数据需要保留则一般使用这种方法
-    // 最后一个 2 表示两个点，即四个数值,并非两个数值
-    matrix.mapPoints(dst, 0, pts, 2, 2);
-
-    float radius = 100;
-    matrix.mapRadius(radius);
-    matrix.setScale(0.5f, 1f);
-    Log.i(TAG, "mapRadius: " + radius); // 测量半径,由于圆可能会因为画布变换变成椭圆，所以此处测量的是平均半径
   }
 
-  /** setPolyToPoly 自定义变换 */
+  // matrix setPolyToPoly 自定义变换
   private void customMatrixPoly(Canvas canvas) {
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
 
@@ -1221,40 +1213,10 @@ public class CanvasView extends View {
     // canvas.concat(new Matrix());
     // canvas.setMatrix(new Matrix());
     polyMatrix.setPolyToPoly(src, 0, dst, 0, src.length >> 1); // src.length >> 1 为位移运算 相当于处以 2
-
     // 此处为了更好的显示对图片进行了等比缩放和平移(图片本身有点大)
     polyMatrix.postScale(0.26f, 0.26f);
     polyMatrix.postTranslate(0, 200);
     canvas.drawBitmap(bitmap, polyMatrix, mPaint);
-  }
-
-  /**
-   * 使用 Camera 来做三维变换
-   *
-   * <p>Camera 的三维变换有三类：旋转、平移、移动相机(不常用)
-   *
-   * <p>3D 坐标系是左手坐标系，原点默认左上角，X 轴右，Y 轴上，Z 轴垂直屏幕内
-   *
-   * <p>摄像机默认是透视投影，近大远小，在屏幕左上角
-   *
-   * <p>3D 坐标系如何设置旋转中心？
-   */
-  private void camera(Canvas canvas) {
-    canvas.translate(getWidth() / 2, getHeight() / 2);
-    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
-    Matrix matrix = new Matrix();
-    Camera camera = new Camera();
-    camera.save();
-    camera.rotateY(60);
-    camera.getMatrix(matrix);
-    camera.restore();
-    matrix.preTranslate(-bitmap.getWidth() / 2, -bitmap.getHeight() / 2);
-    matrix.preScale(0.5f, 0.5f);
-    canvas.drawBitmap(bitmap, matrix, mPaint);
-  }
-
-  public void doCamera() {
-    invalidate();
   }
 
   /*
@@ -1264,7 +1226,7 @@ public class CanvasView extends View {
    *
    * 开启硬件加速后，CPU 将绘制内容交给 GPU 操作，最终由 GPU 完成渲染工作
    *
-   * 硬件加速的好处：1. GPU 相较于 CPU 对于图形计算有更大的优势 2. 绘制机制的不同，导致界面重绘时刷新效率极大提高(GPU 重绘时只更新需要更新的
+   * 硬件加速的好处：1.GPU 相较于 CPU 对于图形计算有更大的优势 2.绘制机制的不同，导致界面重绘时刷新效率极大提高(GPU 重绘时只更新需要更新的
    * View，而关闭硬件加速后需要全部重绘)
    *
    * 硬件加速的弊端：canvas 的一些 API 在硬件加速下无法生效
@@ -1272,8 +1234,9 @@ public class CanvasView extends View {
   private void hardwareSpeed() {
     // LAYER_TYPE_SOFTWARE 软件加速，开启时会自动关闭硬件加速
     // LAYER_TYPE_HARDWARE 硬件加速
-    // 离屏缓冲，开启硬件加速后，单独启用一块地方绘制该 View，绘制内容会被缓存下来，在进行移动、伸缩、旋转、透明等无需 invalidate
-    // 的属性动画时可以开启硬件加速来极大提高动画执行的效率, 不适用于基于自定义属性绘制的动画
+    /* 离屏缓冲，开启硬件加速后，单独启用一块地方绘制该 View，绘制内容会被缓存下来，在进行移动、伸缩、旋转、透明等无需 invalidate
+       的属性动画时可以开启硬件加速来极大提高动画执行的效率, 不适用于基于自定义属性绘制的动画
+    */
     setLayerType(LAYER_TYPE_HARDWARE, null);
     ObjectAnimator animator = ObjectAnimator.ofFloat(this, "rotationY", 180);
     animator.addListener(
