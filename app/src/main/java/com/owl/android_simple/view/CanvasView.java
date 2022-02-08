@@ -37,7 +37,6 @@ import android.graphics.Shader;
 import android.graphics.Shader.TileMode;
 import android.graphics.SweepGradient;
 import android.graphics.Typeface;
-import android.graphics.Xfermode;
 import android.graphics.drawable.PictureDrawable;
 import android.text.Layout.Alignment;
 import android.text.StaticLayout;
@@ -332,6 +331,8 @@ public class CanvasView extends View {
    * Android 绘制都是按顺序的，先绘制的内容会被后绘制的内容覆盖
    *
    * 在继承已有控件的基础上添加绘制代码时，需要考虑代码的绘制顺序
+   *  super.onDraw() 上面，绘制的内容会被控件的原内容盖住。
+   *  super.onDraw() 下面，控件的原内容会被绘制的内容盖住。
    *
    * 1.背景(发生在 drawBackground 方法中，但此方法是 private 的，一般在 XML 或者 Java 代码中设置)
    *
@@ -343,27 +344,33 @@ public class CanvasView extends View {
    *
    * 5 前景(XML 或者 setForeground 设置)
    *
-   * 也可以重写 draw 方法，将绘制代码设置在 super.draw 前或者后
    */
 
   @Override
   public void draw(Canvas canvas) {
     super.draw(canvas);
+    /*
+    * drawBackground(Canvas); // 绘制背景（不能重写）
+      onDraw(Canvas); // 绘制主体
+      dispatchDraw(Canvas); // 绘制子 View
+      onDrawForeground(Canvas); // 绘制滑动相关和前景
+    * */
   }
 
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    clipRect(canvas);
+    clipPath(canvas);
   }
 
   // 绘制子 View
   @Override
   protected void dispatchDraw(Canvas canvas) {
     super.dispatchDraw(canvas);
+    // do something，绘制代码在子 View 内容之后，绘制内容就能盖住子 View 了
   }
 
-  // 绘制前景色
+  // 依次绘制滑动边缘渐变、滑动条和前景
   @Override
   public void onDrawForeground(Canvas canvas) {
     super.onDrawForeground(canvas);
@@ -841,6 +848,7 @@ public class CanvasView extends View {
 
   // shader 着色器，它在图形绘制过程中返回一段段颜色值，通过调用 Paint.setShader() 方法，可以将它的子类安装进画笔
   // 在设置了 Shader 的情况下，Paint.setColor/ARGB() 所设置的颜色就不再起作用
+  // shader 常与 matrix 结合，可实现一些动态效果 -> shader.setLocalMatrix(Matrix localM)
   /*
   * BitmapShader 图片渲染器，用图片来填充图形、文字，如圆形头像
   *
@@ -1031,12 +1039,11 @@ public class CanvasView extends View {
   }
 
   private void setXferMode(Canvas canvas) {
-    Xfermode xfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
     // 使用离屏缓冲，把要绘制的内容单独绘制在缓冲层
     int saved = canvas.saveLayer(null, null, Canvas.ALL_SAVE_FLAG);
     canvas.drawCircle(getWidth() / 2, getHeight() / 2, 200, mPaint);
     // 设置 Xfermode
-    mPaint.setXfermode(xfermode);
+    mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
     canvas.drawRect(new RectF(100, 100, 500, 500), mPaint); // 画圆
     mPaint.setXfermode(null); // 用完及时清除 Xfermode
     canvas.restoreToCount(saved);
@@ -1153,23 +1160,23 @@ public class CanvasView extends View {
   private void clipRect(Canvas canvas) {
     canvas.save();
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
-    canvas.clipRect(0, 0, getWidth() / 2 / 2, getHeight() / 2 / 2);
-    canvas.drawBitmap(bitmap, 200, 200, mPaint);
+    canvas.clipRect(0, 0, getWidth(), getHeight());
+    canvas.drawBitmap(bitmap, 0, 0, mPaint);
     canvas.restore();
   }
 
   private void clipPath(Canvas canvas) {
     Path path = new Path();
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
-    path.addCircle(getWidth() / 2, getHeight() / 2, 500, Path.Direction.CW);
+    path.addCircle(getWidth() / 2, getHeight() / 2, 200, Path.Direction.CW);
     canvas.clipPath(path);
-    canvas.drawBitmap(bitmap, 200, 200, mPaint);
+    canvas.drawBitmap(bitmap, 0, 0, mPaint);
   }
 
   /*
     matrix 矩阵 ：使用 Matrix 来做常见变换
      1.创建 Matrix 对象
-     2.调用 Matrix 的 post Translate/Rotate/Scale/Skew() 方法来设置几何变换
+     2.调用 Matrix 的 post/set + Translate/Rotate/Scale/Skew() 方法来设置几何变换
      3. Canvas.setMatrix(matrix) 或 Canvas.concat(matrix) 来把几何变换应用到 Canvas
   */
   private void matrixBase() {
@@ -1178,7 +1185,21 @@ public class CanvasView extends View {
     matrix.reset(); // 重置当前 Matrix(将当前 Matrix 重置为单位矩阵)
   }
 
-  // matrix setPolyToPoly 自定义变换
+  /*
+   * matrix setPolyToPoly 多点映射，就是把指定的点移动到给出的位置，从而发生形变
+   * matrix.setPolyToPoly(float[] src, int srcIndex, float[] dst, int dstIndex, int pointCount)
+   *  src 源点集合
+   *  dst 目标点集合
+   *  srcIndex 和 dstIndex 是第一个点的偏移
+   *  pointCount 是采集的点的个数，最大值为 4
+   *    1 时，只能位移
+   *    2 时，缩放，旋转、位移
+   *    3 时，缩放、位移、旋转、错切
+   *    4 时，可以进行 缩放、旋转、平移、错切以及任何形变
+   *
+   *  按照 左上、右上、右下、左下 顺时针顺序渲染坐标
+   *
+   * */
   private void customMatrixPoly(Canvas canvas) {
     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wallhaven_doe);
 
@@ -1192,8 +1213,8 @@ public class CanvasView extends View {
       bitmap.getWidth(),
       bitmap.getHeight(), // 右下
       0,
-      bitmap.getHeight()
-    }; // 左下
+      bitmap.getHeight() // 左下
+    };
 
     float[] dst = {
       0,
@@ -1203,16 +1224,9 @@ public class CanvasView extends View {
       bitmap.getWidth(),
       bitmap.getHeight() - 200, // 右下
       0,
-      bitmap.getHeight()
-    }; // 左下
-
-    // 核心要点
-    // src 原始数组，srcIndex 原始数组开始位置，dst 目标数组，dstIndex 目标数组开始位置，pointCount 测控点的数量(范围 0-4)
-    // 随着 pointCount 数值增大 setPolyToPoly 的可以操作性也越来越强,大部分情况为 4; 0 - 3 有其它方法替代，只有为 4 时，可以任意形变，无其它方法替代
-    // 如果这个 Matrix 赋值给了 Canvas，它的作用范围就是整个画布;如果赋值给了 Bitmap，它的作用范围就是整张图片
-    // canvas.concat(new Matrix());
-    // canvas.setMatrix(new Matrix());
-    polyMatrix.setPolyToPoly(src, 0, dst, 0, src.length >> 1); // src.length >> 1 为位移运算 相当于处以 2
+      bitmap.getHeight() // 左下
+    };
+    polyMatrix.setPolyToPoly(src, 0, dst, 0, src.length >> 1); // src.length >> 1 为位移运算 相当于除以 2
     // 此处为了更好的显示对图片进行了等比缩放和平移(图片本身有点大)
     polyMatrix.postScale(0.26f, 0.26f);
     polyMatrix.postTranslate(0, 200);
