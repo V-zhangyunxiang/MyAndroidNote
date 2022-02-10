@@ -135,7 +135,7 @@ public class CanvasView extends View {
     mPaint.setStrikeThruText(false);
     // 设置下划线
     mPaint.setUnderlineText(false);
-    // 设置文字横向错切角度,文字倾斜度
+    // 设置文字横向倾斜度
     mPaint.setTextSkewX(0);
     // 设置文字横向缩放，也就是每个字符变胖变瘦
     // 值> 1.0 会使文本更宽。值 <1.0 将缩小文本范围
@@ -147,9 +147,11 @@ public class CanvasView extends View {
     // 获取 paint 的 FontMetrics
     FontMetrics fontMetrics = mPaint.getFontMetrics();
     // fontMetrics.top;
-    // fontMetrics.bottom;
     // fontMetrics.ascent;
+    // fontMetrics.baseline;
     // fontMetrics.descent;
+    // fontMetrics.bottom;
+
     // 抖动，用来优化色彩深度降低时的绘制效果
     mPaint.setDither(true);
     // 双线性过滤，用来优化 Bitmap 放大绘制时的效果
@@ -162,24 +164,26 @@ public class CanvasView extends View {
     // mPaint.setFlags(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
   }
 
-  /**
+  /*
    * 定义: 测量 View 的大小
    *
-   * <p>如果对 View 的宽高进行修改了，不要调用 super.onMeasure(widthMeasureSpec, heightMeasureSpec)，要调用
+   * 如果对 View 的宽高进行修改了，不要调用 super.onMeasure(widthMeasureSpec, heightMeasureSpec)，要调用
    * setMeasuredDimension(widthSize,heightSize) 这个函数
    *
-   * <p>MeasureSpec 一个 int 有 32 bit，将它的高 2 位用来代表测量模式 Mode，低 30 位用来代表数值大小 Size
+   * MeasureSpec 一个 int 有 32 bit，将它的高 2 位用来代表测量模式 Mode，低 30 位用来代表数值大小 Size
    *
-   * <p>MeasureSpec.EXACTLY 表示父控件已经确切的指定了子 View 的大小(数值或 match_parent)
+   * MeasureSpec.EXACTLY 表示父控件已经确切的指定了子 View 的大小(数值或 match_parent)
    *
-   * <p>MeasureSpec.AT_MOST 表示子 View 大小由自身内容决定，但不能超过父 View 大小(wrap_content)
+   * MeasureSpec.AT_MOST 表示子 View 大小由自身内容决定，但不能超过父 View 大小(wrap_content)
    *
-   * <p>MeasureSpec.UNSPECIFIED 默认值，父控件没有给子 View 任何限制，子 View 可以设置为任意大小
+   * MeasureSpec.UNSPECIFIED 默认值，父控件没有给子 View 任何限制，子 View 可以设置为任意大小
    *
-   * <p>MeasureSpec.makeMeasureSpec(int size, int mode)) 将 Mode 和 Size 组合成一个 measureSpec 数值
-   *
-   * <p>public static int resolveSize(int size , int measureSpec) 系统提供判断测量模式的代码，size
-   * 表示你希望的宽或高，返回计算后的宽或高
+   * MeasureSpec.makeMeasureSpec(int size, int mode))
+   *    将 Mode 和 Size 组合成一个 measureSpec 数值
+   * MeasureSpec.getMode(widthMeasureSpec); MeasureSpec.getSize(widthMeasureSpec);
+   *    将 MeasureSpec 拆解成 mode 和 size
+   * public static int resolveSize(int size , int measureSpec) 系统提供判断测量模式的代码，size
+   *    表示你希望的宽或高，返回计算后的宽或高
    *
    * @param widthMeasureSpec
    * @param heightMeasureSpec
@@ -636,12 +640,10 @@ public class CanvasView extends View {
 
   /*
    * 测量文字的宽度并返回
+   * measureText(String text)
    *
    * measureText 测量出来的宽度总是比 getTextBounds 大一点
-   *
-   * measureText 测量的是文字占用的宽度
-   *
-   * getTextBounds 测量的是文字显示的宽度，而文字本身是带有内边距的
+   * measureText 测量的是文字占用的宽度，getTextBounds 测量的是文字显示的宽度，而文字本身是带有内边距的
    */
   public void measureText(Canvas canvas) {
     String str = "Hello World";
@@ -651,10 +653,10 @@ public class CanvasView extends View {
   /*
    * 获取文字的显示范围
    *
-   * text 要显示的文字; start 和 end 分别是文字的起始和结束位置; bounds 是存储文字显示范围的对象，方法在测算完成之后会把结果写进 bounds
-   *
    * getTextBounds(String text, int start, int end, Rect bounds)
-   *
+   *  text   要显示的文字
+   *  start 和 end 分别是文字的起始和结束位置
+   *  bounds 是存储文字显示范围的对象，方法在测算完成之后会把结果写进 bounds
    */
   public void getTextBounds(Canvas canvas) {
     String str = "Hello World";
@@ -686,15 +688,17 @@ public class CanvasView extends View {
    * 绘制文字
    *
    * public void drawText (String text, float x, float y, Paint paint)
+   *   text 文字内容
+   *   x, y 简单理解为字体的左下角坐标，因为文字自带的空隙，实际靠左一点；y 是基准线，用来让所有文字互相对齐
    *
    * public void drawText(String text, int start, int end, float x, float y, Paint paint)
+   *   x 起点，y 终点，截取 [x,y) 区间的字符串
    */
   private void drawText(Canvas canvas) {
     String str = "中华人民共和国";
-    // float x, float y 简单理解为字体的左下角坐标
+
     canvas.drawText(str, 200, 500, mPaint);
 
-    // int start, int end，截取 [x,y) 区间的字符串
     canvas.drawText(str, 1, 3, mWidth / 2, mHeight / 2, mPaint);
   }
 
@@ -703,16 +707,15 @@ public class CanvasView extends View {
   *
   * 与 drawText 相比，StaticLayout 能在 View 到达最大宽度后自动折行，也能识别 \n 换行符
   *
-  * width 是文字区域的宽度，文字到达这个宽度后就会自动换行，align 是文字的对齐方向
-  *
-  * spacingmult 是行间距的倍数，通常情况下填 1 就好，spacingadd 是行间距的额外增加值，通常情况下填 0 就好
-  *
-  * includepad  是指是否在文字上下添加额外的空间，来避免某些过高的字符的绘制出现越界
-  *
   * StaticLayout(CharSequence source, TextPaint paint,
-                       int width,
-                       Alignment align, float spacingmult, float spacingadd,
-                       boolean includepad)
+                        int width,
+                        Alignment align, float spacingmult, float spacingadd,
+                        boolean includepad)
+  * width 是文字区域的宽度，文字到达这个宽度后就会自动换行
+  * align 是文字的对齐方向
+  * spacingmult 是行间距的倍数，通常情况下填 1 就好
+  * spacingadd  是行间距的额外增加值，通常情况下填 0 就好
+  * includepad  是指是否在文字上下添加额外的空间，来避免某些过高的字符的绘制出现越界
   */
   private void drawWrapText(Canvas canvas) {
     String str = "a\nbc\ndefghi\njklm\nnopqrst\nuvwx\nyz";
@@ -848,7 +851,7 @@ public class CanvasView extends View {
 
   // shader 着色器，它在图形绘制过程中返回一段段颜色值，通过调用 Paint.setShader() 方法，可以将它的子类安装进画笔
   // 在设置了 Shader 的情况下，Paint.setColor/ARGB() 所设置的颜色就不再起作用
-  // shader 常与 matrix 结合，可实现一些动态效果 -> shader.setLocalMatrix(Matrix localM)
+  // shader 常与 matrix、动画结合，可实现一些动态效果 -> shader.setLocalMatrix(Matrix localM)
   /*
   * BitmapShader 图片渲染器，用图片来填充图形、文字，如圆形头像
   *
@@ -1041,10 +1044,10 @@ public class CanvasView extends View {
   private void setXferMode(Canvas canvas) {
     // 使用离屏缓冲，把要绘制的内容单独绘制在缓冲层
     int saved = canvas.saveLayer(null, null, Canvas.ALL_SAVE_FLAG);
-    canvas.drawCircle(getWidth() / 2, getHeight() / 2, 200, mPaint);
+    canvas.drawCircle(getWidth() / 2, getHeight() / 2, 200, mPaint); // 目标图
     // 设置 Xfermode
     mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-    canvas.drawRect(new RectF(100, 100, 500, 500), mPaint); // 画圆
+    canvas.drawRect(new RectF(100, 100, 500, 500), mPaint); // 源图
     mPaint.setXfermode(null); // 用完及时清除 Xfermode
     canvas.restoreToCount(saved);
   }

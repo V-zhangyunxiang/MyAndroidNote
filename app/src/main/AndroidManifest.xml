@@ -16,7 +16,7 @@
     android:theme="@style/Theme.AppCompat.Light.NoActionBar"
     tools:ignore="GoogleAppIndexingWarning">
 
-    <activity android:name=".customview.CustomViewTestAct">
+    <activity android:name=".customview.RotateRectActivity">
 
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
