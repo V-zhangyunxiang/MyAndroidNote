@@ -17,32 +17,33 @@ package com.owl.kotlin.code
  *    kotlin 中通过 import 函数路径后直接使用
  *    不同的 kt 文件中，相同的顶层函数或属性间冲突
  *    与成员函数重名时默认使用顶层函数，使用成员函数需 this.函数名称(注意)
- *    Java
+ *
+ *    Java 使用时
  *      会将顶层函数所在的 kt 文件名.函数 来调用，属性同理
  *      在文件的开头，包名的前面使用 @JvmName 自定义类名，提供给 Java 调用,属性同理
  */
 class PoorGuy {
-    var pocket: Double = 0.0
+  var pocket: Double = 0.0
 }
 
 fun PoorGuy.times(count: Int): String {
-    this.pocket
-    return ""
+  this.pocket
+  return ""
 }
 
 var PoorGuy.age: Double
-    get() {
-        return this.pocket
-    }
-    set(value) {
-        this.pocket = value
-    }
+  get() {
+    return this.pocket
+  }
+  set(value) {
+    this.pocket = value
+  }
 
 fun main() {
-    var poorGuy = PoorGuy()
-    var time = poorGuy.times(5)
-    var age = poorGuy.age
-    println("time= $time age=$age")
+  var poorGuy = PoorGuy()
+  var time = poorGuy.times(5)
+  var age = poorGuy.age
+  println("time= $time age=$age")
 }
 
 

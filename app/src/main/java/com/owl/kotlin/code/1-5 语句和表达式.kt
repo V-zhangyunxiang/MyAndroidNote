@@ -7,24 +7,16 @@ package com.owl.kotlin.code
  *  if-else when try catch 语句
  *
  *  任何表达式都可以用标签（label）来标记，标签的格式为标识符后跟 @ 符号
+ *  通常使用隐式标签更方便，与函数同名
+ *
  *  return : 默认从最直接包围它的函数或者匿名函数返回
  *  break :  终止最直接包围它的循环
  *  continue : 继续下一次最直接包围它的循环
- *
- *  通常使用隐式标签更方便，与函数同名
- *
  * */
 var a = 0
 var c = if (a == 3) 4 else 5
 
 fun Test() {
-  label@ when (a) {
-    0 -> c = 5
-    1 -> c = 10
-    else -> c = 20
-
-  }
-
   c = when (a) {
     0 -> 5
     1 -> 10

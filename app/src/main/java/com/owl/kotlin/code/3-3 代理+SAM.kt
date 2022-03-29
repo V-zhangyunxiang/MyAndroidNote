@@ -6,16 +6,16 @@ package com.owl.kotlin.code
  */
 
 interface IntPredicate {
-    fun accept(i: Int): Boolean
+  fun accept(i: Int): Boolean
 }
 
 // 创建一个类的实例
 val isEven = object : IntPredicate {
-    override fun accept(i: Int): Boolean {
-        return i % 2 == 0
-    }
+  override fun accept(i: Int): Boolean {
+    return i % 2 == 0
+  }
 }
 
 // 通过 lambda 表达式创建一个实例
-// val isEven2 = IntPredicate { it % 2 == 0 }
+//val isEven2 = IntPredicate { it % 2 == 0 }
 

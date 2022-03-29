@@ -11,6 +11,7 @@ import android.graphics.RectF;
 import android.graphics.SweepGradient;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -82,6 +83,13 @@ public class RotateRectView extends View {
     if (degree >= 360) {
       degree = 0;
     }
+    setOnTouchListener(
+        new OnTouchListener() {
+          @Override
+          public boolean onTouch(View v, MotionEvent event) {
+            return false;
+          }
+        });
     Log.i("zyx", "degree= " + degree);
   }
 
