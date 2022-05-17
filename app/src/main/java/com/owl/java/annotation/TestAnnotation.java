@@ -14,21 +14,11 @@ import java.lang.reflect.Method;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@interface Persons {
-  Person[] value();
-}
-
-// @Repeatable(Persons.class)
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
 @interface Person {
   int id() default 1;
 
   String role() default "s";
 }
-
-@Person(role = "artist")
-class SuperMan {}
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -40,7 +30,7 @@ class SuperMan {}
 @Retention(RetentionPolicy.RUNTIME)
 @interface Perform {}
 
-// Test
+
 @Person()
 public class TestAnnotation {
   @Check(value = "hi")
