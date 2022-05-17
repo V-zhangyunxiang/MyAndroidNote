@@ -50,10 +50,15 @@ import kotlin.reflect.KProperty
  *   annotation class AnnotationName() 声明注解
  *
  * 4.泛型
+ *   泛型类，泛型接口和泛型方法
+ *   泛型类型的命名不是必须为 T，也可以使用其他「单个大写字母」，但为了便于阅读，有一些约定成俗的命名规范
+ *   使用关键字 out 来支持协变，等同于 Java 中的上界通配符 ? extends，只能读不能写
+ *   使用关键字 in 来支持逆变，等同于 Java 中的下界通配符 ? super，只能写不能读(只能读出 Object 类型)
  *
+ *   声明处 out in
+ *   在声明类的时候，给泛型符号加上 out 关键字，表明泛型参数 T 只会用来输出，在使用的时候就不用额外加 out 了(in 同理)
  *
- *
- *
+ *   关键字 reified 配合 inline 可以用来判断泛型类型
  *
  *
  */
@@ -165,4 +170,10 @@ class AnnotationsTest {
         println("Clicked")
     }
 
+}
+
+inline fun <reified T> printIfTypeMatch(item: Any) {
+    if (item is T) {  // 这里就不会在提示错误了
+        println(item)
+    }
 }
